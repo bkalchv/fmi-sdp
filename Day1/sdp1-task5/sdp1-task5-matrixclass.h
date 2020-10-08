@@ -16,11 +16,11 @@ class Matrix {
     Matrix(const Matrix&);
     Matrix(const int&,const int&,const int&,const int&,const int&,const int&,const int&,const int&, const int&);
     ~Matrix();
-    Matrix operator*(Matrix&);
+    Matrix operator*(const Matrix&) const;
     Matrix& operator=(const Matrix&);
     void print();
-    size_t getRowsAmount();
-    size_t getColsAmount();
+    size_t getRowsAmount() const;
+    size_t getColsAmount() const;
     int** getMatrix();
     void inputRowByRow();
 };

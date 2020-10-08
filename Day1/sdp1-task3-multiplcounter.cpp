@@ -10,6 +10,8 @@ int findDigitsAmountOfMultiplication(double num1, double num2) {
   return digitsAmount;
 }
 
+//uint32_t - unsigned int 32 bit;
+
 int main() {
   double multiplier1, multiplier2;
 

@@ -11,7 +11,10 @@ Matrix::Matrix(): rowsAmount{3}, colsAmount{3} {
   matrix = new int*[rowsAmount];
 
   for (size_t rowNr{0}; rowNr < rowsAmount; ++rowNr) { // Allocates memory for an 3x3 matrix
-    matrix[rowNr] = new int[colsAmount];
+    matrix[rowNr] = new (nothrow) int[colsAmount];
+    if (!matrix[rowNr]) {
+
+    }
   }
 
   for (size_t rowNr = 0; rowNr < rowsAmount; rowNr++) {
@@ -22,7 +25,7 @@ Matrix::Matrix(): rowsAmount{3}, colsAmount{3} {
 }
 
 Matrix::Matrix(const Matrix& otherMatrix): rowsAmount{otherMatrix.rowsAmount}, colsAmount{otherMatrix.colsAmount}{ //Copy-constructor
-   
+  //copy()
   matrix = new int*[rowsAmount];
 
   for (size_t rowNr{0}; rowNr < rowsAmount; ++rowNr) { // Allocates memory for an 3x3 matrix
@@ -68,41 +71,51 @@ Matrix::Matrix(const int& member11, const int& member12, const int& member13, co
 }
 
 Matrix& Matrix::operator=(const Matrix& otherMatrix) {
-  cout << "op= called" << endl;
-  rowsAmount = otherMatrix.rowsAmount;
-  colsAmount = otherMatrix.colsAmount;
+  if(this->matrix != otherMatrix.matrix) {
+    cout << "operator= called" << endl;
+    rowsAmount = otherMatrix.rowsAmount;
+    colsAmount = otherMatrix.colsAmount;
 
-  for (size_t rowNr{0}; rowNr < rowsAmount; ++rowNr) { // Allocates memory for an 3x3 matrix
-    matrix[rowNr] = new int[colsAmount];
-  }
+    //copy()
+    //delete()
 
-  for (size_t rowNr = 0; rowNr < rowsAmount; rowNr++) {
-      for (size_t colNr = 0; colNr < colsAmount; colNr++) {
-        matrix[rowNr][colNr] = otherMatrix.matrix[rowNr][colNr];
-      }
+    // Deallocate first! (If working in other array)
+    /*for (size_t rowNr{0}; rowNr < rowsAmount; ++rowNr) { // Allocates memory for an 3x3 matrix
+      matrix[rowNr] = new int[colsAmount];
+    }
+    */
+
+    for (size_t rowNr = 0; rowNr < rowsAmount; rowNr++) {
+        for (size_t colNr = 0; colNr < colsAmount; colNr++) {
+          matrix[rowNr][colNr] = otherMatrix.matrix[rowNr][colNr];
+        }
+    }
+
+  return *this;
   }
 
   return *this;
 }
 
-size_t Matrix::getRowsAmount() {
+size_t Matrix::getRowsAmount() const {
   return this->rowsAmount;
 }
 
-size_t Matrix::getColsAmount() {
+size_t Matrix::getColsAmount() const {
   return this->colsAmount;
 }
 
 Matrix::~Matrix() {
   if(this->matrix != nullptr) {
-  for(size_t rowNr{0}; rowNr < rowsAmount; ++rowNr) {
-      delete[] matrix[rowNr];
+    for(size_t rowNr{0}; rowNr < rowsAmount; ++rowNr) {
+        delete[] matrix[rowNr];
     }
     delete[] matrix;
+    matrix = nullptr;
   }
 }
 
-Matrix Matrix::operator*(Matrix& otherMatrix) {
+Matrix Matrix::operator*(const Matrix& otherMatrix) const {
    if(colsAmount != otherMatrix.getColsAmount()) {
     throw std::runtime_error("Matrices must have domino-like dimension, in order for them to be multiplied with one another!");
   } else {
@@ -148,6 +161,8 @@ void Matrix::inputRowByRow() {
 }
 
 void Matrix::print() {
+  cout << endl;
+
   for(size_t rowNr{0}; rowNr < rowsAmount; ++rowNr) {
     for(size_t colNr{0}; colNr < colsAmount; ++colNr) {
       if(colNr==0) {

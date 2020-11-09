@@ -47,15 +47,15 @@ int main() {
     cout << "Would you like to check wether another word is a palindrome? (y/n)" << endl;
     cin >> answer;
 
-    while (answer != 'y' && answer != 'n' && answer.length() != 1) {
+    while (answer != "y" && answer != "n" && answer.length() != 1) {
       cout << "Wrong input! Try again!" << endl;
       cout << "*Expected input: y or n (yes or no)*" << endl;
       cin >> answer;
     }
 
-    if (answer == 'y') {
+    if (answer == "y") {
       again = true;
-    } else if (answer == 'n') {
+    } else if (answer == "n") {
       again = false;
     }
   }

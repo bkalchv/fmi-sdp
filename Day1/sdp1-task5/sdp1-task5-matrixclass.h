@@ -21,7 +21,7 @@ class Matrix {
     void print();
     size_t getRowsAmount() const;
     size_t getColsAmount() const;
-    int** getMatrix();
+    int** getMatrix() const;
     void inputRowByRow();
 };
 

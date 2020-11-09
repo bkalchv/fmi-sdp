@@ -29,7 +29,7 @@ Matrix::Matrix(const Matrix& otherMatrix): rowsAmount{otherMatrix.rowsAmount}, c
   matrix = new int*[rowsAmount];
 
   for (size_t rowNr{0}; rowNr < rowsAmount; ++rowNr) { // Allocates memory for an 3x3 matrix
-    matrix[rowNr] = new int[colsAmount];
+    matrix[rowNr] = new (nothrow) int[colsAmount];
   }
 
   for (size_t rowNr = 0; rowNr < rowsAmount; rowNr++) {
@@ -103,6 +103,10 @@ size_t Matrix::getRowsAmount() const {
 
 size_t Matrix::getColsAmount() const {
   return this->colsAmount;
+}
+
+int** Matrix::getMatrix() const {
+  return this->matrix;
 }
 
 Matrix::~Matrix() {

@@ -76,7 +76,7 @@ string toPostfixExpression(string infixExpression) {
 }
 
 int main() {
-  string infixExpression = "a+a+b*c";
+  string infixExpression = "b*c+a";
   string postfixExpression = toPostfixExpression(infixExpression);
   cout << postfixExpression << endl;
 }

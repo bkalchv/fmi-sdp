@@ -34,9 +34,12 @@ int main() {
   s.push('a');
   s.push('b');
   s.push('c');
+  cout << s;
+
+  cout << "  |  " << endl;
+  cout << "  v  " << endl;
 
   // s1 = |a| -> |b| -> |c|;
   stack<char> s1 = reverseStack(s);
   cout << s1;
-  
 }

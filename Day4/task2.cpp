@@ -6,7 +6,7 @@
 
 using namespace std;
 
-static bool isPalindrome(string word) {
+bool isPalindrome(string word) {
   Stack<char> wordInStack = Stack<char>();
   for (size_t i{0}; i < word.size(); ++i) {
     char currentCharacter = word.at(i);
@@ -25,7 +25,7 @@ static bool isPalindrome(string word) {
   return true;
 }
 
-static void printWhetherPalindrome(string word) {
+void printWhetherPalindrome(string word) {
   if(isPalindrome(word)) {
     cout << "The word '"<< word << "' is a palindrome!" << endl;
   } else {

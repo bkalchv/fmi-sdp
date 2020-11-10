@@ -19,14 +19,14 @@ string expressionToBrackets(const string& expression) {
   return result;
 }
 
-static bool isOpeningBracket(const char& c) {
+bool isOpeningBracket(const char& c) {
   if (c == '(' || c == '[' || c == '{') {
     return true;
   }
   return false;
 }
 
-static bool isClosingBracket(const char& c) {
+bool isClosingBracket(const char& c) {
   if (c == ')' || c == ']' || c == '}') {
     return true;
   }
@@ -77,7 +77,7 @@ char getClosingBracket(const char& openingBracket) {
     return '-';
 }
 
-static bool isValidExpression (string expressionToBeChecked) {
+bool isValidExpression (string expressionToBeChecked) {
   string bracketsExpression(expressionToBrackets(expressionToBeChecked));
   stack<char> stackOfOpenningBrackets;
 
@@ -99,7 +99,7 @@ static bool isValidExpression (string expressionToBeChecked) {
   return stackOfOpenningBrackets.empty();
 }
 
-static void printWhetherValid(string expression) {
+void printWhetherValid(string expression) {
   cout << "---------------------------------------------------------------------------" << endl;
   cout << "The expression '" << expression << "' is being broken down to " << expressionToBrackets(expression) << endl;
   if (isValidExpression(expression)) {

@@ -28,6 +28,15 @@ stack<char> getStackOfOperators(string expression) {
   return result;
 }
 
+int getOperatorsWeight(char c) {
+  if (c == '*' || c == '/') {
+    return 2;
+  } else if (c == '+' || c == '-') {
+    return 1;
+  }
+  return 0;
+}
+
 stack<string> getStackOfOperrands(string expression) {
   stack<string> result;
   string charToString;
@@ -59,24 +68,39 @@ string toPostfixExpression(string infixExpression) {
   stack<string> operrandsStack {getStackOfOperrands(infixExpression)};
 
   while (!operatorsStack.empty()) {
-    char currentOperator = operatorsStack.top();
-    string operrand1 = operrandsStack.top();
-    operrandsStack.pop();
-    string operrand2 = operrandsStack.top();
-    operrandsStack.pop();
+  
+      if (operatorsStack.top() == ')') {
+      operatorsStack.pop();
+      while (!operatorsStack.empty() && operatorsStack.top() != '(') {
+        char currentOperatorInsider = operatorsStack.top();
+        string operrand1Insider = operrandsStack.top();
+        operrandsStack.pop();
+        string operrand2Insider = operrandsStack.top();
+        operrandsStack.pop();
+        string postfixForCurrentOperatorInsider = getPostfixExpression(operrand1Insider, currentOperatorInsider, operrand2Insider);
+        operrandsStack.push(postfixForCurrentOperatorInsider);
+        operatorsStack.pop();
+      }
+      operatorsStack.pop();
+    } else {
+      char currentOperator = operatorsStack.top();
+      string operrand1 = operrandsStack.top();
+      operrandsStack.pop();
+      string operrand2 = operrandsStack.top();
+      operrandsStack.pop();
 
-    string postfixForCurrentOperator = getPostfixExpression(operrand1, currentOperator, operrand2);
+      string postfixForCurrentOperator = getPostfixExpression(operrand1, currentOperator, operrand2);
 
-    operrandsStack.push(postfixForCurrentOperator);
-
-    operatorsStack.pop();
+      operrandsStack.push(postfixForCurrentOperator); 
+      operatorsStack.pop();
+    }
   }
 
   return operrandsStack.top();
 }
 
 int main() {
-  string infixExpression = "b*c+a";
+  string infixExpression = "a+b+c*d";
   string postfixExpression = toPostfixExpression(infixExpression);
   cout << postfixExpression << endl;
 }

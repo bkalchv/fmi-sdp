@@ -53,7 +53,7 @@ Node* createTree()
 
 	// Level 4
 	root->children[3]->children[0]->children[1]->children.push_back(new Node("foo", root->children[3]->children[0]->children[1]));
-	root->children[3]->children[0]->children[1]->children.push_back(new Node("foo", root->children[3]->children[0]->children[1]));
+	root->children[3]->children[0]->children[1]->children.push_back(new Node("bar", root->children[3]->children[0]->children[1]));
 
 	return root;
 }
@@ -172,7 +172,6 @@ std::vector<const Node*> getRelativePath(const Node* root, const std::string& fr
 
 		if (toNode->dirName == fromNode->dirName)
 		{
-			reversePath.push_back(toNode);
 			reverse(reversePath.begin(), reversePath.end());
 			return reversePath;
 			break;
@@ -188,7 +187,7 @@ int main()
 	printLevels(root);
 
 	string fromDirectory = "/";
-	string toDirectory = "profile";
+	string toDirectory = "bar";
 
 	vector<const Node*> relativePath = getRelativePath(root, fromDirectory, toDirectory);
 
@@ -198,10 +197,14 @@ int main()
 	}
 	else
 	{
-		cout << "Relative path from \"" << fromDirectory << "\" to \"" << toDirectory << "\": ";
+		cout << "Relative path from \"" << fromDirectory << "\" to \"" << toDirectory << "\": ./";
 		for (const Node* node : relativePath)
-		{
-			cout << node->dirName << "/";
+		{	
+			cout << node->dirName;
+			if (node->dirName != toDirectory)
+			{
+				 cout << "/";
+			}
 		}
 		cout << endl;
 	}

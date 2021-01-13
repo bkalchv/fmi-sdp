@@ -108,14 +108,11 @@ void printLevel(const Node* root, size_t level)
 
 void printTree(const Node* root)
 {
-    printLevel(root, 0); cout << endl;
-
     size_t height = getTreeHeight(root);
     for (size_t i{0}; i < height; ++i)
     {
         printLevel(root, i); cout << endl;
     }
-    
 }
 
 bool isVisited(const vector<const Node*>& visited, const Node* node)

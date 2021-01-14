@@ -47,10 +47,10 @@ void readVerticesAddEdges(std::string filename, std::set<size_t>& vertices)
 {
 	ifstream inMyfile;
 	inMyfile.open(filename.c_str());
-	std::string line;
-
+	
 	if (inMyfile)
 	{
+		std::string line;
 		int number1;
 		int number2;
 		char openingBracket;

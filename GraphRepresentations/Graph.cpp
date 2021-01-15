@@ -16,7 +16,7 @@ map<size_t, forward_list<size_t>> adjacencyLists;
 
 bool hasEdge(size_t from, size_t to)
 {
-	if (!adjacencyLists[from].empty())
+	if (adjacencyLists.find(from) != adjacencyLists.end() && adjacencyLists.find(from) != adjacencyLists.end())
 	{
 		for (size_t neighbour : adjacencyLists[from])
 		{
@@ -33,14 +33,13 @@ bool hasEdge(size_t from, size_t to)
 // Adds an edge, if it doesn't exist already (directed Graph)
 void addEdge(size_t from, size_t to)
 {
-	if (!hasEdge(from, to))
+	if (adjacencyLists.find(from) != adjacencyLists.end() && adjacencyLists.find(to) != adjacencyLists.end())
 	{
-		if (adjacencyLists[from].empty())
+		if (!hasEdge(from, to))
 		{
-			adjacencyLists[from] = forward_list<size_t>();
+			adjacencyLists[from].push_front(to);
 		}
-		adjacencyLists[from].push_front(to);
-	}
+	}		
 }
 
 void readVerticesAddEdges(std::string filename, std::set<size_t>& vertices)
@@ -71,11 +70,13 @@ void readVerticesAddEdges(std::string filename, std::set<size_t>& vertices)
 				if (adjacencyLists.find(number1) == adjacencyLists.end())
 				{
 					adjacencyLists[number1];
+					cout << "Vertex [" << number1 << "] added successfully." << endl;
 				}
 
 				if (adjacencyLists.find(number2) == adjacencyLists.end())
 				{
 					adjacencyLists[number2];
+					cout << "Vertex [" << number2 << "] added successfully." << endl;
 				}
 
 				if (!hasEdge(number1, number2))
@@ -89,7 +90,6 @@ void readVerticesAddEdges(std::string filename, std::set<size_t>& vertices)
 					{
 						cout << "Edge between " << number1 << " and " << number2 << " added successfully!" << endl;
 					}
-
 				}
 			}
 

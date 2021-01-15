@@ -6,6 +6,7 @@
 #include <map>
 #include <forward_list>
 #include <set>
+#include <vector>
 #include <fstream>
 #include <string>
 #include <sstream>
@@ -42,10 +43,10 @@ void addEdge(size_t from, size_t to)
 	}		
 }
 
-void readVerticesAddEdges(std::string filename, std::set<size_t>& vertices)
+void readVerticesAddEdges(const std::string& filename, std::set<size_t>& vertices)
 {
 	ifstream inMyfile;
-	inMyfile.open(filename.c_str());
+	inMyfile.open(filename);
 	
 	if (inMyfile)
 	{
@@ -139,6 +140,73 @@ void printAdjacencyLists()
 	}
 }
 
+// DFS hasCycleRec() for a directed graph
+bool hasCycleRec(size_t vertex, set<size_t>& visited, set<size_t>& current)
+{
+	if (current.find(vertex) != current.end())
+	{
+		return true;
+	}
+
+	current.insert(vertex);
+
+	for (size_t neighbour : adjacencyLists[vertex])
+	{
+		if (visited.find(neighbour) == visited.end())
+		{
+			if (hasCycleRec(neighbour, visited, current))
+				return true;
+		}
+	}
+
+	visited.insert(vertex);
+	return false;
+}
+
+// DFS hasCycle() for a directed graph
+bool hasCycle()
+{
+	set<size_t> isVisited;
+	set<size_t> isCurrent;   // If it is an directed Graph(We have to check where we're coming from)
+	return hasCycleRec(0, isVisited, isCurrent);
+}
+
+void DFSRemoveVisited(size_t from, std::set<size_t>& vertices)
+{
+	vertices.erase(from);
+
+	if (adjacencyLists.find(from) != adjacencyLists.end())
+	{	
+		for(size_t neighbour : adjacencyLists[from])
+		{
+			if (vertices.find(neighbour) != vertices.end())
+			{
+				DFSRemoveVisited(neighbour, vertices);
+			}
+		}
+	}
+}
+size_t countComponents(const set<size_t>& vertices)
+{
+	size_t count = 0;
+
+	set<size_t> verticesCopy;
+
+	for (size_t vertex : vertices)
+	{
+		verticesCopy.insert(vertex);
+	}
+
+	while (!verticesCopy.empty())
+	{
+		++count;
+		size_t currentVertex = *verticesCopy.begin();
+		DFSRemoveVisited(currentVertex, verticesCopy);
+	}
+
+	return count;
+}
+
 int main()
 {
 	std::set<size_t> vertices;
@@ -150,6 +218,7 @@ int main()
 		cout << vertex << " ";
 	}
 	cout << endl;
+	cout << vertices.size() << " vertices." << endl;
 
 	for (const size_t& vertex : vertices)
 	{
@@ -161,6 +230,10 @@ int main()
 	}
 
 	printAdjacencyLists();
+
+	cout << "Our graph has " << (hasCycle() ? "at least one cycle." : "NO cycles.") << endl;
+
+	cout << "Our graph consists of " << countComponents(vertices) << " components." << endl;
 
 	return 0;
 }

@@ -106,6 +106,21 @@ void printLevel(const Node* root, size_t level)
     }
 }
 
+void getLevel(const Node* root, size_t level, vector<const Node*>& levelNodes)
+{
+    if (level == 0)
+    {
+        levelNodes.push_back(root);
+        return;
+    }
+
+    for (const Node* child : root->children)
+    {
+        getLevel(child, level - 1, levelNodes);
+    }
+
+}
+
 void printTree(const Node* root)
 {
     size_t height = getTreeHeight(root);
@@ -121,10 +136,8 @@ bool isVisited(const vector<const Node*>& visited, const Node* node)
 }
 
 // Returns a vector of leaves, using BFS
-vector<const Node*> getLeavesBFS(const Node* root)
+void getLeavesBFS(const Node* root, vector<const Node*>& leaves)
 {
-    vector<const Node*> leaves;
-
     vector<const Node*>   visited;
     queue<const Node*>    wave;
 
@@ -146,16 +159,15 @@ vector<const Node*> getLeavesBFS(const Node* root)
         wave.pop();
     }
 
-    return leaves;
 }
 
 // Returns a vector of leaves, using DFS
-vector<const Node*> getLeavesDFS(const Node* root, vector<const Node*>& leavesSoFar)
+void getLeavesDFS(const Node* root, vector<const Node*>& leavesSoFar)
 {
     if (root->children.empty()) 
     {
         leavesSoFar.push_back(root);
-        return leavesSoFar;
+        return;
     }
 
     for (const Node* child : root->children)
@@ -163,7 +175,31 @@ vector<const Node*> getLeavesDFS(const Node* root, vector<const Node*>& leavesSo
         getLeavesDFS(child, leavesSoFar);
     }
 
-    return leavesSoFar;
+    return;
+}
+
+void getLeftViewNodes(const Node* root, vector<const Node*>& leftViewNodes)
+{
+    size_t treeHeight = getTreeHeight(root);
+
+    for (size_t i{0}; i < treeHeight ; ++i)
+    {
+        vector<const Node*> levelNodes;
+        getLevel(root, i, levelNodes);
+        leftViewNodes.push_back(levelNodes[0]);
+    }
+}
+
+void getRightViewNodes(const Node* root, vector<const Node*>& rightViewNodes)
+{
+    size_t treeHeight = getTreeHeight(root);
+
+    for (size_t i{ 0 }; i < treeHeight; ++i)
+    {
+        vector<const Node*> levelNodes;
+        getLevel(root, i, levelNodes);
+        rightViewNodes.push_back(levelNodes[levelNodes.size() - 1]);
+    }
 }
 
 int main()
@@ -173,9 +209,9 @@ int main()
     cout << "Tree's degree: " << getTreeDegree(root) << endl;
     printTree(root); cout << endl;
 
-    clock_t dfsStart = clock();
     vector<const Node*> leaves;
-    leaves = getLeavesDFS(root, leaves);
+    clock_t dfsStart = clock();
+    getLeavesDFS(root, leaves);
     cout << "leaves: ";
     for (const Node* leaf : leaves)
     {
@@ -184,8 +220,9 @@ int main()
     cout << endl;
     cout << "Time taken for DFS: " << (double)(clock() - dfsStart) / CLOCKS_PER_SEC << "s" << endl;
 
+    vector<const Node*> leaves2;
     clock_t bfsStart = clock();
-    leaves = getLeavesBFS(root);
+    getLeavesBFS(root, leaves2);
     cout << "leaves: ";
     for (const Node* leaf : leaves)
     {
@@ -193,6 +230,24 @@ int main()
     }
     cout << endl;
     cout << "Time taken for BFS: " << (double)(clock() - bfsStart) / CLOCKS_PER_SEC << "s" << endl;
+
+    vector<const Node*> leftViewNodes;
+    getLeftViewNodes(root, leftViewNodes);
+    cout << "Left-view nodes: ";
+    for (const Node*& leftViewNode : leftViewNodes)
+    {
+        cout << "[" << leftViewNode->data << "] ";
+    }
+    cout << endl;
+
+    vector<const Node*> rightViewNodes;
+    getRightViewNodes(root, rightViewNodes);
+    cout << "Right-view nodes: ";
+    for (const Node*& rightViewNode : rightViewNodes)
+    {
+        cout << "[" << rightViewNode->data << "] ";
+    }
+    cout << endl;
 
     return 0;
 }

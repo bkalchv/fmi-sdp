@@ -186,6 +186,7 @@ void DFSRemoveVisited(size_t from, std::set<size_t>& vertices)
 		}
 	}
 }
+
 size_t countComponents(const set<size_t>& vertices)
 {
 	size_t count = 0;

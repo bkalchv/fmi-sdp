@@ -27,8 +27,8 @@ const static string TEXTFILE_EXTENSION  = ".txt";
 //    }
 //};
 
-using DNACToAAMap = map<string, char>;
-using proteinsMap = map<size_t, string>;
+using DNACToAAMap = unordered_map<string, char>;
+using proteinsMap = unordered_map<size_t, string>;
 
 bool isValidDnaSequence(const string& dnaSeq)
 {

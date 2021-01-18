@@ -49,7 +49,7 @@ void printInvalidDnaInputMessage()
     cout << "NOTE: DNA consists of As, Cs, Ts and Gs!" << endl;
 }
 
-void readDna(const string& filenameDna, string& dna)
+bool readDna(const string& filenameDna, string& dna)
 {
     fstream inFile(filenameDna);
     if (inFile)
@@ -75,10 +75,16 @@ void readDna(const string& filenameDna, string& dna)
             }
         }
     }
+    else
+    {
+        cout << "Couldn't open " << filenameDna << endl;
+        return false;
+    }
     inFile.close();
+    return true;
 }
 
-void readDnacToAAMap(const string& filenameDnacToAA, DNACToAAMap& dnacToAAMap)
+bool readDnacToAAMap(const string& filenameDnacToAA, DNACToAAMap& dnacToAAMap)
 {
     fstream inFile(filenameDnacToAA);
     if (inFile)
@@ -98,7 +104,13 @@ void readDnacToAAMap(const string& filenameDnacToAA, DNACToAAMap& dnacToAAMap)
             }
         }
     }
+    else
+    {
+        cout << "Couldn't open " << filenameDnacToAA << endl;
+        return false;
+    }
     inFile.close();
+    return true;
 }
 
 void printDnacToAAMap(const DNACToAAMap& map)
@@ -176,7 +188,7 @@ using ProteinPair = std::pair<size_t, string>;
 //    }
 //};
 
-void readProteins(const string& filenameProteins, proteinsMap& proteins, const DNACToAAMap dnacToAAMap)
+bool readProteins(const string& filenameProteins, proteinsMap& proteins, const DNACToAAMap dnacToAAMap)
 {
     fstream inFile(filenameProteins);
     if (inFile)
@@ -203,7 +215,13 @@ void readProteins(const string& filenameProteins, proteinsMap& proteins, const D
             }
         }
     }
+    else
+    {
+        cout << "Couldn't open " << filenameProteins << endl;
+        return false;
+    }
     inFile.close();
+    return true;
 }
 
 void printProteins(const proteinsMap& map)
@@ -320,17 +338,15 @@ int main()
     }
 
     string dna;
-    readDna(DNA_FILENAME, dna);
+    DNACToAAMap dnacToAAMap;
+    proteinsMap proteins;
     
-    if (!dna.empty())
+    bool successfullyReadAllFiles = readDna(DNA_FILENAME, dna) && readDnacToAAMap(DNAC_TO_AA_FILENAME, dnacToAAMap) && readProteins(PROTEINS_FILENAME, proteins, dnacToAAMap);
+
+    if (successfullyReadAllFiles)
     {
         //cout << "DNA cut: " << dna << endl;
-        DNACToAAMap dnacToAAMap;
-        readDnacToAAMap(DNAC_TO_AA_FILENAME, dnacToAAMap);
         //printDnacToAAMap(dnacToAAMap);
-
-        proteinsMap proteins;
-        readProteins(PROTEINS_FILENAME, proteins, dnacToAAMap);
         //printProteins(proteins);
 
         size_t requestsAmount;
@@ -370,8 +386,8 @@ int main()
     }
     else
     {
-        cout << "* Invalid DNA cut! Check \"dna.txt\" *" << endl;
-        cout << "NOTE: DNA consists of As, Cs, Ts and Gs!" << endl;
+        cout << "* Text file(s) not in the same folder! *" << endl;
+        cout << "NOTE: Text files should be in the same folder as Homework3.cpp!" << endl;
     }  
 
     return 0;

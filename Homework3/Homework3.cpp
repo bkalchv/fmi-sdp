@@ -167,27 +167,6 @@ bool isValidProteinSequence(const string& proteinSeq, const DNACToAAMap& dnacToA
 
 using ProteinPair = std::pair<size_t, string>;
 
-//struct ProteinPair
-//{
-//    size_t id;
-//    string proteinSequence;
-//
-//    ProteinPair(size_t _id, string _proteinSequence) : id{ _id }, proteinSequence{_proteinSequence} {}
-//    bool operator==(const ProteinPair& other) const 
-//    {
-//        return id == other.id;
-//    }
-//};
-
-//template<>
-//struct hash<ProteinPair>
-//{
-//    size_t operator() (const ProteinPair& pair) const
-//    {
-//        return hash<size_t>() (pair.id);
-//    }
-//};
-
 bool readProteins(const string& filenameProteins, proteinsMap& proteins, const DNACToAAMap dnacToAAMap)
 {
     fstream inFile(filenameProteins);
@@ -242,49 +221,25 @@ const string& getProteinByIndex(const proteinsMap& map, size_t id)
     return map.at(id);
 }
 
-int firstStartCodoneIndex(const string& dna, const DNACToAAMap& dnacToAAMap)
-{
-    for (size_t i{0}; i < dna.size() - 2; ++i)
-    {
-        string currentTriplet = dna.substr(i, 3);
-        
-        if (isStartCodone(currentTriplet, dnacToAAMap) && dna.find(currentTriplet) != string::npos)
-        {
-            return dna.find(currentTriplet);
-        }
-
-    }
-
-    return -1;
-}
-
-int firstStopCodoneIndex(const string& dna, const DNACToAAMap& dnacToAAMap)
-{
-    for (size_t i{ 0 }; i < dna.size() - 2; ++i)
-    {
-        string currentTripplet = dna.substr(i, 3);
-
-        if (isStopCodone(currentTripplet, dnacToAAMap) && dna.find(currentTripplet) != string::npos)
-        {
-            return dna.find(currentTripplet);
-        }
-
-    }
-
-    return -1;
-}
-
 int dnaContainsProtein(const string& dna, const string& protein)
 {
-    string proteinStartCodone = getFirstTriplet(protein);
-    string proteinStopCodone = getLastTriplet(protein);
+    string proteinStartCodone   = getFirstTriplet(protein);
+    string proteinStopCodone    = getLastTriplet(protein);
 
-    if (dna.find(proteinStopCodone) != string::npos)
+    // TODO : iterate through the whole dna, dont stop at first appearance of the startCodone
+
+    bool dnaContainsProtein = false;
+    size_t startCodonePos = dna.find(proteinStartCodone);
+
+    while (startCodonePos != string::npos)
     {
-        if (dna.find(proteinStartCodone) != string::npos)
+        if (dna.substr(startCodonePos, protein.size()) == protein)
         {
-            return dna.find(proteinStartCodone);
+            dnaContainsProtein = true;
+            return startCodonePos;
         }
+
+        startCodonePos = dna.find(proteinStartCodone, startCodonePos + 1);
     }
    
     return -1;
@@ -294,10 +249,17 @@ string getCorrespondingAASequence(const string& protein, const DNACToAAMap& dnac
 {
     string result;
 
-    for (size_t i{ 0 }; i < protein.size() - 2; ++i)
+    size_t i = 0;
+    while (i < protein.size() - 2)
     {
         string currentCodone = protein.substr(i, 3);
-        result.push_back(dnacToAAMap.at(currentCodone));
+        char correspondingAA = dnacToAAMap.at(currentCodone);
+        if (correspondingAA == '*')
+        {
+            break;
+        }
+        result.push_back(correspondingAA);
+        i += 3;
     }
 
     return result;

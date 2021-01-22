@@ -105,22 +105,12 @@ string getLastTriplet(const string& protein)
 
 bool isStartCodone(const string& codon, const CodonToAAMap& dnacToAAMap)
 {
-    if (dnacToAAMap.find(codon) != dnacToAAMap.end() && dnacToAAMap.at(codon) != '*')
-    {
-        return true;
-    }
-
-    return false;
+    return dnacToAAMap.find(codon) != dnacToAAMap.end() && dnacToAAMap.at(codon) != '*';
 }
 
 bool isStopCodone(const string& codon, const CodonToAAMap& dnacToAAMap)
 {
-    if (dnacToAAMap.find(codon) != dnacToAAMap.end() && dnacToAAMap.at(codon) == '*')
-    {
-        return true;
-    }
-
-    return false;
+    return dnacToAAMap.find(codon) != dnacToAAMap.end() && dnacToAAMap.at(codon) == '*';
 }
 
 bool isValidProteinSequence(const string& proteinSeq, const CodonToAAMap& dnacToAAMap)

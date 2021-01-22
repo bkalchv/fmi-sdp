@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <stdexcept>
 
 using namespace std;
 
@@ -241,16 +242,19 @@ void printMightBeInDifferentFolderMessage(const string& filename)
     cout << "NOTE: Text files should be in the same folder as Homework3.cpp!" << endl;
 }
 
+void consoleFilenameReader(string& filename)
+{
+    cin >> filename;
+    while (!isValidTextFileNameInputFormat(filename))
+    {
+        filename.clear();
+        cout << "Wrong text filename format! Try again!" << endl;
+        cin >> filename;
+    }
+}
+
 bool fileValidator(string& dnaFilename)
 {
-    cin >> dnaFilename;
-    while (!isValidTextFileNameInputFormat(dnaFilename))
-    {
-        dnaFilename.clear();
-        cout << "Wrong text filename format! Try again!" << endl;
-        cin >> dnaFilename;
-    }
-
     bool dnaFileGood = static_cast<bool>(ifstream(dnaFilename));
     if (!dnaFileGood)
     {
@@ -306,38 +310,50 @@ void printReadingDataUnsuccessfulMessage()
 }
 
 int main()
-{
-    string dnaFilename;
-    if (!fileValidator(dnaFilename))
+{   
+    try 
     {
-        return 0;
-    }
+        string dnaFilename;
+        consoleFilenameReader(dnaFilename);
+        if (!fileValidator(dnaFilename))
+        {
+            throw exception("Something with the file went wrong!");
+        }
 
-    string proteinsFilename;
-    if (!fileValidator(proteinsFilename))
-    {
-        return 0;
-    }
+        string proteinsFilename;
+        consoleFilenameReader(proteinsFilename);
+        if (!fileValidator(proteinsFilename))
+        {
+            throw exception("Something with the file went wrong!");
+        }
 
-    string codonToAAFilename;
-    if (!fileValidator(codonToAAFilename))
-    {
-        return 0;
-    }
+        string codonToAAFilename;
+        consoleFilenameReader(codonToAAFilename);
+        if (!fileValidator(codonToAAFilename))
+        {
+            throw exception("Something with the file went wrong!");
+        }
 
-    string dna;
-    CodonToAAMap codonToAminoacids;
-    ProteinsMap proteins;
+        string dna;
+        CodonToAAMap codonToAminoacids;
+        ProteinsMap proteins;
 
-    bool successFullyReadData = readDna(dnaFilename, dna) && readCodonToAAMap(codonToAAFilename, codonToAminoacids) && readProteins(proteinsFilename, proteins, codonToAminoacids);
+        bool successFullyReadData = readDna(dnaFilename, dna) && readCodonToAAMap(codonToAAFilename, codonToAminoacids) && readProteins(proteinsFilename, proteins, codonToAminoacids);
 
-    if (successFullyReadData)
-    {
-        programRunner(dna, codonToAminoacids, proteins, proteinsFilename);
-    }
-    else
+        if (successFullyReadData)
+        {
+            programRunner(dna, codonToAminoacids, proteins, proteinsFilename);
+        }
+        else
+        {
+            printReadingDataUnsuccessfulMessage();
+        }
+
+    } 
+    catch (exception& except)
     {
         printReadingDataUnsuccessfulMessage();
+        cout << except.what() << endl;
     }
 
     return 0;

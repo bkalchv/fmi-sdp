@@ -242,8 +242,9 @@ void printMightBeInDifferentFolderMessage(const string& filename)
     cout << "NOTE: Text files should be in the same folder as Homework3.cpp!" << endl;
 }
 
-void consoleFilenameReader(string& filename)
+string consoleFilenameReader()
 {
+    string filename;
     cin >> filename;
     while (!isValidTextFileNameInputFormat(filename))
     {
@@ -251,9 +252,10 @@ void consoleFilenameReader(string& filename)
         cout << "Wrong text filename format! Try again!" << endl;
         cin >> filename;
     }
+    return filename;
 }
 
-bool fileValidator(string& dnaFilename)
+bool fileValidator(const string& dnaFilename)
 {
     bool dnaFileGood = static_cast<bool>(ifstream(dnaFilename));
     if (!dnaFileGood)
@@ -265,7 +267,7 @@ bool fileValidator(string& dnaFilename)
     return true;
 }
 
-void programRunner(string& dna, CodonToAAMap& codonToAminoacids, ProteinsMap& proteins, string& proteinsFilename)
+void programRunner(const string& dna, const CodonToAAMap& codonToAminoacids, const ProteinsMap& proteins, const string& proteinsFilename)
 {
     size_t requestsAmount;
     cin >> requestsAmount;
@@ -313,49 +315,37 @@ int main()
 {   
     try 
     {
-        string dnaFilename;
-        consoleFilenameReader(dnaFilename);
-        if (!fileValidator(dnaFilename))
+        string dnaFilename = consoleFilenameReader();
+        string proteinsFilename = consoleFilenameReader();
+        string codonToAAFilename = consoleFilenameReader();
+        bool fileWentWrongExceptionThrown = false;
+
+        if (!fileValidator(dnaFilename) || !fileValidator(proteinsFilename) || !fileValidator(codonToAAFilename))
         {
-            throw exception("Something with the file went wrong!");
+            fileWentWrongExceptionThrown = true;
+            throw exception("Something with the file(s) went wrong!");
         }
 
-        string proteinsFilename;
-        consoleFilenameReader(proteinsFilename);
-        if (!fileValidator(proteinsFilename))
+        if (!fileWentWrongExceptionThrown)
         {
-            throw exception("Something with the file went wrong!");
+            string dna;
+            CodonToAAMap codonToAminoacids;
+            ProteinsMap proteins;
+
+            bool successFullyReadData = readDna(dnaFilename, dna) && readCodonToAAMap(codonToAAFilename, codonToAminoacids) && readProteins(proteinsFilename, proteins, codonToAminoacids);
+
+            if (successFullyReadData)
+            {
+                programRunner(dna, codonToAminoacids, proteins, proteinsFilename);
+            }
+            else
+            {
+                printReadingDataUnsuccessfulMessage();
+            }
         }
-
-        string codonToAAFilename;
-        consoleFilenameReader(codonToAAFilename);
-        if (!fileValidator(codonToAAFilename))
-        {
-            throw exception("Something with the file went wrong!");
-        }
-
-        string dna;
-        CodonToAAMap codonToAminoacids;
-        ProteinsMap proteins;
-
-        bool successFullyReadData = readDna(dnaFilename, dna) && readCodonToAAMap(codonToAAFilename, codonToAminoacids) && readProteins(proteinsFilename, proteins, codonToAminoacids);
-
-        if (successFullyReadData)
-        {
-            programRunner(dna, codonToAminoacids, proteins, proteinsFilename);
-        }
-        else
-        {
-            printReadingDataUnsuccessfulMessage();
-        }
-
-    } 
+    }
     catch (exception& except)
     {
-        if (except.what() == "Something with the file went wrong!")
-        {
-            printReadingDataUnsuccessfulMessage();
-        }
         cout << except.what() << endl;
     }
 

@@ -352,7 +352,10 @@ int main()
     } 
     catch (exception& except)
     {
-        printReadingDataUnsuccessfulMessage();
+        if (except.what() == "Something with the file went wrong!")
+        {
+            printReadingDataUnsuccessfulMessage();
+        }
         cout << except.what() << endl;
     }
 

@@ -10,48 +10,18 @@ using namespace std;
 const static string NUCLEOID_BASES      = {'A', 'C', 'T', 'G'};
 const static string TEXTFILE_EXTENSION  = ".txt";
 
-//struct DNAC_AA_PAIR
-//{
-//    string codone;
-//    char aa;
-//
-//    DNAC_AA_PAIR(string _codone, char _aa)
-//    {
-//        if (_codone.size() > 0 && _codone.size() == 3)
-//            codone = _codone;
-//
-//        if (isupper(_aa))
-//            aa = _aa;
-//        else
-//            aa = toupper(_aa);
-//    }
-//};
+using CodonToAAMap = unordered_map<string, char>;
+using ProteinsMap = unordered_map<size_t, string>;
 
-using DNACToAAMap = unordered_map<string, char>;
-using proteinsMap = unordered_map<size_t, string>;
-
-bool isValidDnaSequence(const string& dnaSeq)
+void printInvalidDnaSequenceMessage(const string& dnaFilename)
 {
-    for (const char& base : dnaSeq)
-    {
-        if (NUCLEOID_BASES.find(base) == string::npos)
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-void printInvalidDnaInputMessage()
-{
-    cout << "* Invalid DNA cut! Check \"dna.txt\" *" << endl;
+    cout << "* Invalid DNA sequence! Check \'" << dnaFilename << "\'!" << endl;
     cout << "NOTE: DNA consists of As, Cs, Ts and Gs!" << endl;
 }
 
-bool readDna(const string& filenameDna, string& dna)
+bool readDna(const string& dnaFilename, string& dna)
 {
-    fstream inFile(filenameDna);
+    fstream inFile(dnaFilename);
     if (inFile)
     {
         string line;
@@ -69,22 +39,25 @@ bool readDna(const string& filenameDna, string& dna)
                     dna.push_back(c);
                 else
                 {
+                    printInvalidDnaSequenceMessage(dnaFilename);
                     dna.clear();
                     break;
+                    return false;
                 }
             }
         }
     }
     else
     {
-        cout << "Couldn't open " << filenameDna << endl;
+        cout << "Couldn't open " << dnaFilename << endl;
         return false;
     }
+
     inFile.close();
     return true;
 }
 
-bool readDnacToAAMap(const string& filenameDnacToAA, DNACToAAMap& dnacToAAMap)
+bool readCodonToAAMap(const string& filenameDnacToAA, CodonToAAMap& dnacToAAMap)
 {
     fstream inFile(filenameDnacToAA);
     if (inFile)
@@ -113,7 +86,7 @@ bool readDnacToAAMap(const string& filenameDnacToAA, DNACToAAMap& dnacToAAMap)
     return true;
 }
 
-void printDnacToAAMap(const DNACToAAMap& map)
+void printCodonToAAMap(const CodonToAAMap& map)
 {
     for (const std::pair<string, char>& p : map)
     {
@@ -131,9 +104,9 @@ string getLastTriplet(const string& protein)
     return protein.substr(protein.size() - 3);
 }
 
-bool isStartCodone(const string& codone, const DNACToAAMap& dnacToAAMap)
+bool isStartCodone(const string& codon, const CodonToAAMap& dnacToAAMap)
 {
-    if (dnacToAAMap.find(codone) != dnacToAAMap.end() && dnacToAAMap.at(codone) != '*')
+    if (dnacToAAMap.find(codon) != dnacToAAMap.end() && dnacToAAMap.at(codon) != '*')
     {
         return true;
     }
@@ -141,9 +114,9 @@ bool isStartCodone(const string& codone, const DNACToAAMap& dnacToAAMap)
     return false;
 }
 
-bool isStopCodone(const string& codone, const DNACToAAMap& dnacToAAMap)
+bool isStopCodone(const string& codon, const CodonToAAMap& dnacToAAMap)
 {
-    if (dnacToAAMap.find(codone) != dnacToAAMap.end() && dnacToAAMap.at(codone) == '*')
+    if (dnacToAAMap.find(codon) != dnacToAAMap.end() && dnacToAAMap.at(codon) == '*')
     {
         return true;
     }
@@ -151,9 +124,8 @@ bool isStopCodone(const string& codone, const DNACToAAMap& dnacToAAMap)
     return false;
 }
 
-bool isValidProteinSequence(const string& proteinSeq, const DNACToAAMap& dnacToAAMap)
+bool isValidProteinSequence(const string& proteinSeq, const CodonToAAMap& dnacToAAMap)
 {
-
     string firstTriplet = getFirstTriplet(proteinSeq);
     string lastTriplet = getLastTriplet(proteinSeq);
 
@@ -165,11 +137,14 @@ bool isValidProteinSequence(const string& proteinSeq, const DNACToAAMap& dnacToA
     return false;
 }
 
-using ProteinPair = std::pair<size_t, string>;
-
-bool readProteins(const string& filenameProteins, proteinsMap& proteins, const DNACToAAMap dnacToAAMap)
+void printInvalidProteinMessage(const string& proteinsFilename, size_t proteinId)
 {
-    fstream inFile(filenameProteins);
+    cout << "Invalid protein sequence in " << proteinsFilename << "! Protein with ID: " << proteinId << " not inserted in map." << endl;
+}
+
+bool readProteins(const string& proteinsFilename, ProteinsMap& proteins, const CodonToAAMap& dnacToAAMap)
+{
+    fstream inFile(proteinsFilename);
     if (inFile)
     {
         string line;
@@ -189,21 +164,21 @@ bool readProteins(const string& filenameProteins, proteinsMap& proteins, const D
                 }
                 else
                 {
-                    cout << "Invalid protein input in " << filenameProteins << ". Didn't input " << protein << " in set." << endl;
+                    printInvalidProteinMessage(proteinsFilename, proteinId);
                 }
             }
         }
     }
     else
     {
-        cout << "Couldn't open " << filenameProteins << endl;
+        cout << "Couldn't open " << proteinsFilename << endl;
         return false;
     }
     inFile.close();
     return true;
 }
 
-void printProteins(const proteinsMap& map)
+void printProteins(const ProteinsMap& map)
 {
     for (const std::pair<size_t, string>& p : map)
     {
@@ -211,12 +186,12 @@ void printProteins(const proteinsMap& map)
     }
 }
 
-bool proteinPairsSetContainsId(const proteinsMap& map, size_t id)
+bool proteinMapContainsId(const ProteinsMap& map, size_t id)
 {
     return map.find(id) != map.end();
 }
 
-const string& getProteinByIndex(const proteinsMap& map, size_t id)
+string getProteinById(const ProteinsMap& map, size_t id)
 {
     return map.at(id);
 }
@@ -245,7 +220,7 @@ int dnaContainsProtein(const string& dna, const string& protein)
     return -1;
 }
 
-string getCorrespondingAASequence(const string& protein, const DNACToAAMap& dnacToAAMap)
+string getCorrespondingAASequence(const string& protein, const CodonToAAMap& dnacToAAMap)
 {
     string result;
 
@@ -270,87 +245,111 @@ bool isValidTextFileNameInputFormat(const string& filename)
     return  filename.size() > 4 && filename.substr(filename.size() - 4) == TEXTFILE_EXTENSION;
 }
 
-int main()
+void printMightBeInDifferentFolderMessage(const string& filename)
 {
-    string DNA_FILENAME;
-    cin >> DNA_FILENAME;
-    while (!isValidTextFileNameInputFormat(DNA_FILENAME))
+    cout << "* Check whether " << filename << " is in the same folder! *" << endl;
+    cout << "If not, make sure " << filename << " is in the same folder and then rerun Homework3.cpp" << endl;
+    cout << "NOTE: Text files should be in the same folder as Homework3.cpp!" << endl;
+}
+
+bool fileValidator(string& dnaFilename)
+{
+    cin >> dnaFilename;
+    while (!isValidTextFileNameInputFormat(dnaFilename))
     {
-        DNA_FILENAME.clear();
+        dnaFilename.clear();
         cout << "Wrong text filename format! Try again!" << endl;
-        cin >> DNA_FILENAME;
+        cin >> dnaFilename;
     }
 
-    string PROTEINS_FILENAME;
-    cin >> PROTEINS_FILENAME;
-    if (!isValidTextFileNameInputFormat(PROTEINS_FILENAME))
+    bool dnaFileGood = static_cast<bool>(ifstream(dnaFilename));
+    if (!dnaFileGood)
     {
-        PROTEINS_FILENAME.clear();
-        cout << "Wrong text filename format! Try again!" << endl;
-        cin >> PROTEINS_FILENAME;
+        printMightBeInDifferentFolderMessage(dnaFilename);
+        return false;
     }
 
-    string DNAC_TO_AA_FILENAME;
-    cin >> DNAC_TO_AA_FILENAME;
-    if (!isValidTextFileNameInputFormat(DNAC_TO_AA_FILENAME))
+    return true;
+}
+
+void programRunner(string& dna, CodonToAAMap& codonToAminoacids, ProteinsMap& proteins, string& proteinsFilename)
+{
+    size_t requestsAmount;
+    cin >> requestsAmount;
+    vector<size_t> requests;
+    requests.resize(requestsAmount);
+
+    for (size_t i{ 0 }; i < requests.size(); ++i)
     {
-        DNAC_TO_AA_FILENAME.clear();
-        cout << "Wrong text filename format! Try again!" << endl;
-        cin >> DNAC_TO_AA_FILENAME;
+        size_t proteinIdInput;
+        cin >> proteinIdInput;
+        requests[i] = proteinIdInput;
     }
 
-    string dna;
-    DNACToAAMap dnacToAAMap;
-    proteinsMap proteins;
-    
-    bool successfullyReadAllFiles = readDna(DNA_FILENAME, dna) && readDnacToAAMap(DNAC_TO_AA_FILENAME, dnacToAAMap) && readProteins(PROTEINS_FILENAME, proteins, dnacToAAMap);
-
-    if (successfullyReadAllFiles)
+    for (const size_t& idRequest : requests)
     {
-        //cout << "DNA cut: " << dna << endl;
-        //printDnacToAAMap(dnacToAAMap);
-        //printProteins(proteins);
-
-        size_t requestsAmount;
-        cin >> requestsAmount;
-        vector<size_t> requests;
-        requests.resize(requestsAmount);
-
-        for (size_t i{0}; i < requests.size(); ++i)
+        if (!proteinMapContainsId(proteins, idRequest))
         {
-            size_t proteinIdInput;
-            cin >> proteinIdInput;
-            requests[i] = proteinIdInput;
+            cout << "No protein in " << proteinsFilename << " with id " << idRequest << endl;
         }
-
-        for (const size_t& idRequest : requests)
+        else
         {
-            if (!proteinPairsSetContainsId(proteins, idRequest))
+            string proteinOfRequest = getProteinById(proteins, idRequest);
+            int proteinInDnaStartIndex = dnaContainsProtein(dna, proteinOfRequest);
+
+            if (proteinInDnaStartIndex != -1)
             {
-                cout << "No protein in " << PROTEINS_FILENAME <<  " with id " << idRequest << endl;
+                string correspondingAASequence = getCorrespondingAASequence(proteinOfRequest, codonToAminoacids);
+                cout << "Yes " << proteinInDnaStartIndex << " " << correspondingAASequence << endl;
             }
             else
             {
-                string proteinOfRequest = getProteinByIndex(proteins, idRequest);
-                int proteinInDnaStartIndex = dnaContainsProtein(dna, proteinOfRequest);
-
-                if (proteinInDnaStartIndex != -1)
-                {
-                    string correspondingAASequence = getCorrespondingAASequence(proteinOfRequest, dnacToAAMap);
-                    cout << "Yes " << proteinInDnaStartIndex << " " << correspondingAASequence << endl;
-                }
-                else
-                {
-                    cout << "No" << endl;
-                }
+                cout << "No" << endl;
             }
         }
     }
+}
+
+void printReadingDataUnsuccessfulMessage()
+{
+    cout << "Reading data unsuccessful!" << endl;
+    cout << "* Check wether files aren't being currently used by another program! *" << endl;
+}
+
+int main()
+{
+    string dnaFilename;
+    if (!fileValidator(dnaFilename))
+    {
+        return 0;
+    }
+
+    string proteinsFilename;
+    if (!fileValidator(proteinsFilename))
+    {
+        return 0;
+    }
+
+    string codonToAAFilename;
+    if (!fileValidator(codonToAAFilename))
+    {
+        return 0;
+    }
+
+    string dna;
+    CodonToAAMap codonToAminoacids;
+    ProteinsMap proteins;
+
+    bool successFullyReadData = readDna(dnaFilename, dna) && readCodonToAAMap(codonToAAFilename, codonToAminoacids) && readProteins(proteinsFilename, proteins, codonToAminoacids);
+
+    if (successFullyReadData)
+    {
+        programRunner(dna, codonToAminoacids, proteins, proteinsFilename);
+    }
     else
     {
-        cout << "* Text file(s) not in the same folder! *" << endl;
-        cout << "NOTE: Text files should be in the same folder as Homework3.cpp!" << endl;
-    }  
+        printReadingDataUnsuccessfulMessage();
+    }
 
     return 0;
 }

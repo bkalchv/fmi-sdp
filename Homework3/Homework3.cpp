@@ -13,12 +13,6 @@ const static string TEXTFILE_EXTENSION  = ".txt";
 using CodonToAAMap = unordered_map<string, char>;
 using ProteinsMap = unordered_map<size_t, string>;
 
-void printInvalidDnaSequenceMessage(const string& dnaFilename)
-{
-    cout << "* Invalid DNA sequence! Check \'" << dnaFilename << "\'!" << endl;
-    cout << "NOTE: DNA consists of As, Cs, Ts and Gs!" << endl;
-}
-
 string readDna(const string& dnaFilename)
 {
     string dnaSequence;
@@ -40,19 +34,18 @@ string readDna(const string& dnaFilename)
                     dnaSequence.push_back(c);
                 else
                 {
-                    printInvalidDnaSequenceMessage(dnaFilename);
                     dnaSequence.clear();
-                    break;
-                    return dnaSequence;
+                    inFile.close();
+                    throw exception("DNA file contains invalid DNA sequence!\nNOTE: DNA consists of As, Cs, Ts and Gs only!");
                 }
             }
         }
     }
     else
     {
+        inFile.close();
         throw exception("DNA file could not be read!");
     }
-
     inFile.close();
     return dnaSequence;
 }
@@ -80,6 +73,7 @@ CodonToAAMap readCodonToAAMap(const string& filenameCodonToAA)
     }
     else
     {
+        inFile.close();
         throw exception("Codon to aminoacids file could not be read!");
     }
     inFile.close();
@@ -162,6 +156,7 @@ ProteinsMap readProteins(const string& proteinsFilename, const CodonToAAMap& cod
     }
     else
     {
+        inFile.close();
         throw exception("Proteins file could not be read!");
     }
     inFile.close();

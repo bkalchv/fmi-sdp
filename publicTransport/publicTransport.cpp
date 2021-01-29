@@ -4,10 +4,10 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <forward_list>
-#include <list>
 #include <sstream>
-#include <istream>
 #include <fstream>
+
+#include "Instrument.h"
 
 using namespace std;
 
@@ -155,7 +155,7 @@ void readGraph(const string& filename)
     }
 }
 
-void printAdjacencyLists()
+void printGraph()
 {
     for (const pair<unsigned int, AdjacencyList>& p : Graph)
     {
@@ -177,8 +177,108 @@ void printAdjacencyLists()
     }
 }
 
+enum class userChoice
+{
+    AddStation,
+    RemoveStation,
+    AddRoute,
+    RemoveRoute,
+    AddLine,
+    RemoveLine,
+    Quit,
+    Back,
+    Error
+};
+
+using choicePair = pair<const string&, const string&>;
+
+userChoice toEnum(const choicePair& choice)
+{
+    if (choice.first == "1")
+    {
+        if (choice.second == "1") return userChoice::AddStation;
+        if (choice.second == "2") return userChoice::AddRoute;
+        if (choice.second == "3") return userChoice::AddLine;
+        if (choice.second == "4") return userChoice::Back;
+    }
+    else if (choice.first == "2")
+    {
+        if (choice.second == "1") return userChoice::RemoveStation;
+        if (choice.second == "2") return userChoice::RemoveRoute;
+        if (choice.second == "3") return userChoice::RemoveLine;
+        if (choice.second == "4") return userChoice::Back;
+    }
+    else if (choice.first == "3")
+    {
+        return userChoice::Quit;
+    }
+  
+    return userChoice::Error;
+}
+
 int main()
 {
-    readGraph("Text.txt");
-    printAdjacencyLists(); cout << endl;
+    /*readGraph("Text.txt");
+    printGraph(); cout << endl;*/
+
+    const MenuItem* chosenAction;
+    const MenuItem* chosenObject;
+    
+    while (true)
+    {
+        try
+        {
+            Instrument::display(Instrument::mainMenu);
+            Instrument::getChoice(chosenAction, Instrument::mainMenu);
+
+            string lastMainMenuItemNumber = Instrument::mainMenu.back()->getNumber();
+            if (chosenAction->match(lastMainMenuItemNumber))
+                break;
+
+            system("CLS");
+
+            Instrument::display(Instrument::objectMenu);
+            Instrument::getChoice(chosenObject, Instrument::objectMenu);
+            string lastObjectMenuItemNumber = Instrument::objectMenu.back()->getNumber();
+
+            if (chosenObject->getNumber() == lastObjectMenuItemNumber)
+            {
+                system("CLS");
+                continue;
+            }
+
+            userChoice choice = toEnum(make_pair(chosenAction->getNumber(), chosenObject->getNumber()));
+
+            switch (choice)
+            {
+            case userChoice::AddStation:
+                //TODO: AddNewStation();
+                break;
+            case userChoice::AddRoute:
+                //TODO: AddNewRoute();
+                break;
+            case userChoice::AddLine:
+                //TODO: AddNewLine();
+                break;
+            case userChoice::RemoveStation:
+                //TODO: RemoveExistingStation();
+                break;
+            case userChoice::RemoveRoute:
+                //TODO: RemoveExistingRoute();
+                break;
+            case userChoice::RemoveLine:
+                //TODO: RemoveExistingLine();
+                break;
+            default:
+                throw exception("Case unhandled! Implement missing logic!");
+            }
+
+        }
+        catch (std::exception& e)
+        {
+            cout << e.what() << endl;
+        }
+    }
+
+    return 0;
  }

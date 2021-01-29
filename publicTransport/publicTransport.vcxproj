@@ -139,11 +139,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Instrument.cpp" />
+    <ClCompile Include="MenuItem.cpp" />
     <ClCompile Include="publicTransport.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="initFile.txt" />
     <Text Include="Text.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Instrument.h" />
+    <ClInclude Include="MenuItem.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

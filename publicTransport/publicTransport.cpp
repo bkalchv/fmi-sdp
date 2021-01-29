@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <set>
 #include <unordered_set>
 #include <forward_list>
 #include <list>
@@ -53,87 +52,29 @@ struct Station
     }
 };
 
-struct StationHasher
+struct Edge 
 {
-    size_t operator()(const Station& s) const
+    Station toStation;
+    size_t  weight;
+
+    Edge(Station _toStation, size_t _weight = DEFAULT_EDGE_WEIGHT) : toStation{ Station(_toStation.s_nr, _toStation.s_name) }, weight{_weight}  {}
+
+    bool operator==(const Edge& otherStation) const
     {
-        return hash<unsigned int>()(s.s_nr);
+        return (toStation == otherStation.toStation && weight == otherStation.weight);
     }
 };
 
-struct customStationComparator 
+struct EdgeHasher
 {
-    bool operator()(const Station& f_s, const Station& s_s) const
+    size_t operator()(const Edge& e) const
     {
-        return f_s.s_nr < s_s.s_nr;
+        return hash<unsigned int>()(e.toStation.s_nr);
     }
 };
 
-using AdjacencyList = list< pair<Station, size_t> >;
+using AdjacencyList = unordered_set<Edge, EdgeHasher>;
 unordered_map<unsigned int, AdjacencyList> Graph;
-
-const Station& findStation(unsigned int stationNr, const AdjacencyList& adjacencyList)
-{
-    for (const pair<Station, size_t>& st : adjacencyList)
-    {
-        if (st.first.s_nr == stationNr)
-        {
-            return st.first;
-        }
-    }
-
-    throw exception("Station not found in Adjacency list!");
-}
-
-int findStationIndex(unsigned int stationNr, const AdjacencyList& adjacencyList)
-{
-    int result = 0;
-   
-    for (const pair<Station, size_t>& st : adjacencyList)
-    {
-        if (st.first.s_nr == stationNr)
-        {
-            return result;
-        }
-        ++result;
-    }
-
-    return -1;
-}
-
-void addStationToAdjacencyList(unsigned int s_nr, const Station& st)
-{
-    if (findStationIndex(st.s_nr, Graph[s_nr]) == -1)
-    {
-        Graph[s_nr].push_back(pair<Station, size_t>(Station(st), DEFAULT_EDGE_WEIGHT));
-    }
-}
-
-//set<Station, customStationComparator> stationsSet;
-list<Station> stationsList;
-
-void addStationToList(const Station& stationToAdd)
-{
-    for (const Station& currentStation : stationsList)
-    {
-        if (stationToAdd == currentStation)
-        {
-            return;
-        }
-    }
-    stationsList.push_back(Station(stationToAdd));
-}
-
-//const Station& findStationFromListByNumber(unsigned int stationNr)
-//{
-//    for (Station& currentStation : stationsList)
-//    {
-//        if (currentStation.s_nr == stationNr)
-//        {
-//            return currentStation;
-//        }
-//    }
-//}
 
 std::vector<Station> stationsToVector(string& stations)
 {
@@ -187,24 +128,21 @@ void readGraph(const string& filename)
                         if (i == 0)
                         {
                             Station nextStation = Station(vectorStations[i + 1]);
-                            addStationToAdjacencyList(currentStation.s_nr, nextStation);
+                            Graph[currentStation.s_nr].insert(Edge(nextStation, DEFAULT_EDGE_WEIGHT));
                         }
                         else if (i == vectorStations.size() - 1)
                         {
                             Station prevStation = Station(vectorStations[i- 1]);
-                            addStationToAdjacencyList(currentStation.s_nr, prevStation);
+                            Graph[currentStation.s_nr].insert(Edge(prevStation, DEFAULT_EDGE_WEIGHT));
                         }
                         else
                         {
-                            Station nextStation = Station(vectorStations[i + 1]);
-                            addStationToAdjacencyList(currentStation.s_nr, nextStation);
-
                             Station prevStation = Station(vectorStations[i - 1]);
-                            addStationToAdjacencyList(currentStation.s_nr, prevStation);
-                        }
+                            Graph[currentStation.s_nr].insert(Edge(prevStation, DEFAULT_EDGE_WEIGHT));
 
-                        addStationToList(Station(currentStation));
-                        //stationsSet.insert(currentStation);
+                            Station nextStation = Station(vectorStations[i + 1]);
+                            Graph[currentStation.s_nr].insert(Edge(nextStation, DEFAULT_EDGE_WEIGHT));
+                        }
                     }
                 }       
             }
@@ -228,10 +166,10 @@ void printAdjacencyLists()
             cout << ": ";
             for (AdjacencyList::const_iterator it = p.second.begin(); it != p.second.end(); ++it)
             {
-                Station adjacentStation = it->first;
+                Station adjacentStation = it->toStation;
                 cout << "->";
                 adjacentStation.print();
-                cout << "(" << it->second << ")";
+                cout << "(" << it->weight << ")";
             }
         }
 
@@ -243,5 +181,4 @@ int main()
 {
     readGraph("Text.txt");
     printAdjacencyLists(); cout << endl;
-    //printAllStations();
  }

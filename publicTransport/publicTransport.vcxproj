@@ -139,17 +139,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Edge.cpp" />
+    <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="Instrument.cpp" />
     <ClCompile Include="MenuItem.cpp" />
     <ClCompile Include="publicTransport.cpp" />
+    <ClCompile Include="EdgeHasher.cpp" />
+    <ClCompile Include="Bus.cpp" />
+    <ClCompile Include="Station.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="initFile.txt" />
+    <Text Include="PublicTransport.txt" />
     <Text Include="Text.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Bus.h" />
+    <ClInclude Include="Edge.h" />
+    <ClInclude Include="EdgeHasher.h" />
+    <ClInclude Include="FileManager.h" />
     <ClInclude Include="Instrument.h" />
     <ClInclude Include="MenuItem.h" />
+    <ClInclude Include="Station.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

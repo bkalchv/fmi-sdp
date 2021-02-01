@@ -38,44 +38,44 @@ void printGraph(const Graph& graph)
     }
 }
 
-enum class userChoice
-{
-    AddStation,
-    RemoveStation,
-    AddRoute,
-    RemoveRoute,
-    AddLine,
-    RemoveLine,
-    Quit,
-    Back,
-    Error
-};
+//enum class userChoice 
+//{
+//    AddStation,
+//    RemoveStation,
+//    AddRoute,
+//    RemoveRoute,
+//    AddLine,
+//    RemoveLine,
+//    Quit,
+//    Back,
+//    Error
+//};
 
-using choicePair = pair<const string&, const string&>;
+using choicePair = pair<const unsigned int&, const unsigned int&>;
 
-userChoice toEnum(const choicePair& choice)
-{
-    if (choice.first == "1")
-    {
-        if (choice.second == "1") return userChoice::AddStation;
-        if (choice.second == "2") return userChoice::AddRoute;
-        if (choice.second == "3") return userChoice::AddLine;
-        if (choice.second == "4") return userChoice::Back;
-    }
-    else if (choice.first == "2")
-    {
-        if (choice.second == "1") return userChoice::RemoveStation;
-        if (choice.second == "2") return userChoice::RemoveRoute;
-        if (choice.second == "3") return userChoice::RemoveLine;
-        if (choice.second == "4") return userChoice::Back;
-    }
-    else if (choice.first == "3")
-    {
-        return userChoice::Quit;
-    }
-  
-    return userChoice::Error;
-}
+//userChoice toEnum(const choicePair& choice) // think of ways to cast enum to string
+//{
+//    if (choice.first == "1")
+//    {
+//        if (choice.second == "1") return userChoice::AddStation;
+//        if (choice.second == "2") return userChoice::AddRoute;
+//        if (choice.second == "3") return userChoice::AddLine;
+//        if (choice.second == "4") return userChoice::Back;
+//    }
+//    else if (choice.first == "2")
+//    {
+//        if (choice.second == "1") return userChoice::RemoveStation;
+//        if (choice.second == "2") return userChoice::RemoveRoute;
+//        if (choice.second == "3") return userChoice::RemoveLine;
+//        if (choice.second == "4") return userChoice::Back;
+//    }
+//    else if (choice.first == "3")
+//    {
+//        return userChoice::Quit;
+//    }
+//  
+//    return userChoice::Error;
+//}
 
 int main()
 {
@@ -96,51 +96,49 @@ int main()
     
     string      filename = "PublicTransport.txt";
     FileManager fmanager = FileManager(filename);
-    Instrument  instrument = Instrument(filename);
+    Instrument  instrument = Instrument(fmanager);
 
     while (true)
     {
         try
         {
-            Instrument::display(Instrument::mainMenu);
-            chosenAction = Instrument::getChoice(Instrument::mainMenu);
-
-            string lastMainMenuItemNumber = Instrument::mainMenu.back()->getNumber();
+            instrument.display(instrument.mainMenu);
+            chosenAction = instrument.getChoice(instrument.mainMenu);
+            string lastMainMenuItemNumber = instrument.mainMenu.back()->getNumber();
             if (chosenAction->match(lastMainMenuItemNumber))
                 break;
 
             system("CLS");
 
-            Instrument::display(Instrument::objectMenu);
-            chosenObject = Instrument::getChoice(Instrument::objectMenu);
-            string lastObjectMenuItemNumber = Instrument::objectMenu.back()->getNumber();
-
-            if (chosenObject->getNumber() == lastObjectMenuItemNumber)
+            instrument.display(instrument.objectMenu);
+            chosenObject = instrument.getChoice(instrument.objectMenu);
+            string lastObjectMenuItemNumber = instrument.objectMenu.back()->getNumber();
+            if (chosenObject->match(lastObjectMenuItemNumber))
             {
                 system("CLS");
                 continue;
             }
 
-            userChoice choice = toEnum(make_pair(chosenAction->getNumber(), chosenObject->getNumber()));
+            unsigned int choice = stoi(chosenAction->getNumber()) * 10 + stoi(chosenObject->getNumber());
 
             switch (choice)
             {
-            case userChoice::AddStation:
+            case 11:
                 //TODO: AddNewStation();
                 break;
-            case userChoice::AddRoute:
+            case 12:
                 //TODO: AddNewRoute();
                 break;
-            case userChoice::AddLine:
-                //TODO: AddNewLine();
+            case 13:
+                instrument.addLine();
                 break;
-            case userChoice::RemoveStation:
+            case 21:
                 //TODO: RemoveExistingStation();
                 break;
-            case userChoice::RemoveRoute:
+            case 22:
                 //TODO: RemoveExistingRoute(fromStationNr, toStationNr);
                 break;
-            case userChoice::RemoveLine:
+            case 23:
                 instrument.removeLine();
                 break;
             default:

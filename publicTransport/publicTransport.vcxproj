@@ -149,7 +149,6 @@
     <ClCompile Include="Station.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="PublicTransport.txt" />
     <Text Include="Text.txt" />
   </ItemGroup>
   <ItemGroup>

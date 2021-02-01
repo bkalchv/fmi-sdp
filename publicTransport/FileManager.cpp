@@ -60,7 +60,7 @@ Graph FileManager::readGraph()
 
         while (getline(inputFile, line))
         {
-            std::istringstream   iss(line);
+            std::istringstream iss(line); // descriptive much?
 
             int busNr;
             char delimiter;
@@ -125,7 +125,51 @@ bool FileManager::lineExists(const std::string& lineNumberToCheck)
         }
     }
     inputFile.close();
+    std::cout << "Not found!" << std::endl;
     return false;
+}
+
+void FileManager::addLine(const std::string& lineToAdd)
+{
+    std::ofstream fileOutput;
+    std::ifstream fileInput;
+
+    fileOutput.open("Temp.txt");
+    fileInput.open(this->filename);
+
+    if (fileInput.is_open())
+    {
+        std::string line;
+
+        while (getline(fileInput, line))
+        {
+            fileOutput << line << '\n';
+        }
+
+        fileOutput << lineToAdd << '\n';
+
+
+    }
+    else
+    {   
+        fileInput.close();
+        fileOutput.close();
+        throw std::exception("Couldn't open file!");
+    }
+    fileInput.close();
+    fileOutput.close();
+
+    if (remove(this->filename.c_str()) != 0)
+    {
+        throw std::exception("Removing of temporary file unsuccessful!");
+    }
+
+    if (rename("Temp.txt", this->filename.c_str()) != 0)
+    {
+        throw std::exception("Renaming unsuccessful!");
+    }
+
+    std::cout << "Line successfully added to " << this->filename << std::endl;
 }
 
 void FileManager::removeLine(const std::string& lineNrToRemove)
@@ -153,12 +197,13 @@ void FileManager::removeLine(const std::string& lineNrToRemove)
         {
             throw std::exception("Removing of temporary file unsuccessful!");
         }
+
         if (rename("Temp.txt", this->filename.c_str()) != 0)
         {
             throw std::exception("Renaming unsuccessful!");
         }
 
-        std::cout << "Line number " << lineNrToRemove << " successfully removed!" << std::endl;
+        std::cout << "Line number " << lineNrToRemove << " from " << this->filename <<  " successfully removed!" << std::endl;
     }
     else
     {

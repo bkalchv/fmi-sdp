@@ -9,18 +9,23 @@ private:
 	FileManager fileManager;
 
 public:
+	std::vector<const MenuItem*> objectMenu;
+	std::vector<const MenuItem*> mainMenu;
 
-	Instrument(const std::string&);
-	static std::vector<const MenuItem*> mainMenu;
-	static std::vector<const MenuItem*> objectMenu;
-	static void display(std::vector<const MenuItem*>&);
-	static const MenuItem* getChoice(std::vector<const MenuItem*>&);
+	Instrument(const FileManager&);
+
+	void display(std::vector<const MenuItem*>&);
+	const MenuItem* getChoice(std::vector<const MenuItem*>&);
+	void addLine();
 	void removeLine();
-	
-	void setFileManager(const std::string&);
+
 	~Instrument();
 private:
+	void setFileManager(const std::string&);
 	static const MenuItem* _getChoice(std::vector<const MenuItem*>&);
 	bool isValidLineNumber(const std::string&);
+	bool isValidStationFormat(const std::string&);
+	bool isValidYesNoAnswer(char c);
+	std::string getLineToAddToFile();
 };
 

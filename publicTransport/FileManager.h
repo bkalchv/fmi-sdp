@@ -33,11 +33,14 @@ public:
     Graph readGraph();
 
     bool lineExists(const std::string&);
+    void addLine(const std::string&);
     void removeLine(const std::string&);
 private:
     std::vector<Station> _stationsToVector(std::string& stations)
     {
         std::vector<Station> result;
+
+        // do while condition?
 
         while (!stations.empty() && stations.find(STATIONS_DELIMITER) != std::string::npos)
         {
@@ -53,7 +56,6 @@ private:
 
         unsigned int stationNr = stoul(stations.substr(0, stations.find('-')));
         std::string stationName = stations.substr(stations.find('-') + 1);
-
         result.push_back(Station(stationNr, stationName));
 
         return result;

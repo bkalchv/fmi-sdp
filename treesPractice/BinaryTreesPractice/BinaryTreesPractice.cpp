@@ -1,6 +1,7 @@
 #include <iostream>
 #include <optional>
 #include <vector>
+#include <queue>
 
 using namespace std;
 
@@ -58,6 +59,39 @@ bool addBSTNode(BSTNode*& root, int data)
 bool isLeaf(const BSTNode* node)
 {
     return node && !node->leftChild && !node->rightChild;
+}
+
+size_t getBSTHeight(const BSTNode* root)
+{
+    if (root)
+    {
+        size_t maxHeight = 0;
+
+        size_t maxLeftChildHeight = 0;
+        size_t maxRightChildHeight = 0;
+
+        if (root->leftChild)
+        {
+            size_t currentLeftChildHeight = getBSTHeight(root->leftChild);
+            if (currentLeftChildHeight > maxLeftChildHeight)
+            {
+                maxLeftChildHeight = currentLeftChildHeight;
+            }
+        }
+
+        if (root->rightChild)
+        {
+            size_t currentRightChildHeight = getBSTHeight(root->rightChild);
+            if (currentRightChildHeight > maxRightChildHeight)
+            {
+                maxRightChildHeight = currentRightChildHeight;
+            }
+        }
+
+        maxHeight = std::max(maxLeftChildHeight, maxRightChildHeight);
+
+        return 1 + maxHeight;
+    }
 }
 
 // Prints the BST Inorder (Left, Root, Right); Huge bonus - Everything is sorted well.
@@ -215,15 +249,92 @@ void deleteLeaf(BSTNode*& node)
 
 void trim(BSTNode*& root)
 {   
-    if (isLeaf(root))
+    if (root)
     {
-        deleteLeaf(root);
+        if (isLeaf(root))
+        {
+            deleteLeaf(root);
+            return;
+        }
+        else
+        {
+            trim(root->leftChild);
+            trim(root->rightChild);
+        }
+    }
+}
+
+void getLeftViewNodes(const BSTNode* root, vector<const BSTNode*>& leftViewNodes)
+{
+    if (!root)
+    {
         return;
     }
-    else
+
+    std::queue<const BSTNode*> levelQueue;
+    levelQueue.push(root);
+
+    while (!levelQueue.empty())
     {
-        trim(root->leftChild);
-        trim(root->rightChild);
+        int n = levelQueue.size();
+
+        for (size_t i{ 0 }; i < n; ++i)
+        {
+            const BSTNode* currentNode = levelQueue.front();
+            levelQueue.pop();
+
+            if (i == 0)
+            {
+                leftViewNodes.push_back(currentNode);
+            }
+
+            if (currentNode->leftChild)
+            {
+                levelQueue.push(currentNode->leftChild);
+            }
+
+            if (currentNode->rightChild)
+            {
+                levelQueue.push(currentNode->rightChild);
+            }
+        }
+    }
+}
+
+void getRightViewNodes(const BSTNode* root, vector<const BSTNode*>& rightViewNodes)
+{
+    if (!root)
+    {
+        return;
+    }
+
+    std::queue<const BSTNode*> levelQueue;
+    levelQueue.push(root);
+
+    while (!levelQueue.empty())
+    {
+        int n = levelQueue.size();
+
+        for (size_t i{ 0 }; i < n; ++i)
+        {
+            const BSTNode* currentNode = levelQueue.front();
+            levelQueue.pop();
+
+            if (i == 0)
+            {
+                rightViewNodes.push_back(currentNode);
+            }
+
+            if (currentNode->rightChild)
+            {
+                levelQueue.push(currentNode->rightChild);
+            }
+
+            if (currentNode->leftChild)
+            {
+                levelQueue.push(currentNode->leftChild);
+            }
+        }
     }
 }
 
@@ -239,7 +350,7 @@ int main()
     cout << "Preorder: "; printPreorder(root); cout << endl;
     cout << "Postorder: "; printPostorder(root); cout << endl;
 
-    const_ref_wrapper const_ref_find1 = findData(root, 1);
+    /*const_ref_wrapper const_ref_find1 = findData(root, 1);
     if (const_ref_find1.has_value())
     {
         cout << const_ref_find1.value() << " found" << endl;
@@ -262,7 +373,7 @@ int main()
     if (isValidBST(root))
     {
         cout << "BST is valid!" << endl;
-    }
+    }*/
 
     ref_wrapper ref_find5 = findData(root, 5);
     ref_find5.value().get() = -1;
@@ -323,6 +434,23 @@ int main()
         cout << "No leaves found!";
     }
 
+    size_t treeHeight;
+    treeHeight = getBSTHeight(root);
+    cout << "Tree height:" << treeHeight << endl;
+
+    /*trim(root);
+    cout << "BST after trim: "; printInorder(root); cout << endl;
+    for (const BSTNode* leaf : leaves)
+    {
+        if (findData(root, leaf->data) != std::nullopt)
+        {
+            cout << "A leaf hasn't been deleted after trim! (Unexpected behavior.)";
+        }
+    }
+
+    treeHeight = getBSTHeight(root);
+    cout << treeHeight << endl;
+
     trim(root);
     cout << "BST after trim: "; printInorder(root); cout << endl;
 
@@ -333,6 +461,23 @@ int main()
             cout << "A leaf hasn't been deleted after trim! (Unexpected behavior.)";
         }
     }
+
+    treeHeight = getBSTHeight(root);
+    cout << treeHeight << endl;*/
+
+    vector<const BSTNode*> leftViewNodes;
+    getLeftViewNodes(root, leftViewNodes);
+    cout << "Left view nodes: ";
+    for (const BSTNode* leftViewNode : leftViewNodes)
+        cout << "[" << leftViewNode->data << "] ";
+    cout << endl;
+
+    vector<const BSTNode*> rightViewNodes;
+    getRightViewNodes(root, rightViewNodes);
+    cout << "Right view nodes: ";
+    for (const BSTNode* rightViewNode : rightViewNodes)
+        cout << "[" << rightViewNode->data << "] ";
+    cout << endl;
 
     return 0;
 }

@@ -4,9 +4,11 @@
 #include <string>
 #include <stdexcept>
 
+const std::string BLANK_STATION_INPUT = "-";
+
 Instrument::Instrument(const FileManager& filemanager)
 {
-	this->fileManager = FileManager(fileManager.getFilename());
+	this->fileManager = FileManager(filemanager.getFilenameStations(), filemanager.getFilenameTimetable());
 
 	this->mainMenu =
 	{
@@ -38,7 +40,7 @@ const MenuItem* Instrument::getChoice(std::vector<const MenuItem*>& menu)
 
 	while (!result_getChoice)
 	{
-		system("CLS");
+		//system("CLS");
 		std::cout << "Invalid choice. Choose again!" << std::endl;
 		display(menu);
 		result_getChoice = _getChoice(menu);
@@ -47,10 +49,170 @@ const MenuItem* Instrument::getChoice(std::vector<const MenuItem*>& menu)
 	return result_getChoice;
 }
 
+void Instrument::addStation()
+{
+	std::string stationToAddNumber, stationToAddName, stationToAddLineNumber, stationToAddPrevious, stationToAdd;
+	std::cout << "Please enter the number of the station you'd like to add: ";
+	std::getline(std::cin, stationToAddNumber);
+
+	while (!isNumber(stationToAddNumber))
+	{
+		std::cout << "Wrong input! Try again! (a number expected)" << std::endl;
+		std::cout << "Please enter the number of the station you'd like to add: ";
+		std::getline(std::cin, stationToAddNumber);
+	}
+
+	std::cout << "Please enter the name of the station you'd like to add:";
+	std::getline(std::cin, stationToAddName);
+
+	stationToAdd = stationToAddNumber.append("-").append(stationToAddName);
+
+	std::cout << "To which line would you like to add a station?" << std::endl;
+	std::getline(std::cin, stationToAddLineNumber);
+	while (!isValidLineNumber(stationToAddLineNumber))
+	{
+		std::cout << "Wrong input! Try again! (a positive number expected)" << std::endl;
+		std::cout << "Please enter the number of the station you'd like to add: ";
+		std::getline(std::cin, stationToAddLineNumber);
+	}
+
+	std::cout << "After which station would you like to add the station?" << std:: endl;
+	std::cout << "('-' in case you're adding a first stop)" << std::endl;
+	std::getline(std::cin, stationToAddPrevious);
+	if (stationToAddPrevious != BLANK_STATION_INPUT)
+	{
+		while (!isValidStationFormat(stationToAddPrevious))
+		{
+			std::cout << "Invalid station input! (*stationNumber-stationName* expected)" << std::endl;
+			std::cout << "After which station would you like to add the station?" << std::endl;
+			std::getline(std::cin, stationToAddPrevious);
+		}
+	}
+
+	this->fileManager.addStation(stationToAdd, stationToAddLineNumber, stationToAddPrevious);
+}
+
+void Instrument::removeStation()
+{
+	std::cout << "Please input the station you'd like to remove: ";
+	std::string stationToRemove;
+	std::getline(std::cin, stationToRemove);
+
+	while (!isValidStationFormat(stationToRemove))
+	{
+		std::cout << "Invalid input! Try again!" << std::endl;
+		std::cout << "Please input the station you'd like to remove: ";
+		std::getline(std::cin, stationToRemove);
+	}
+
+	this->fileManager.removeStation(stationToRemove);
+}
+
+void Instrument::addRoute()
+{
+	std::string lineNumber, fromStation, toStation, routeLength;
+	std::vector<Station> stationsToAdd;
+
+	std::cout << "To which line would you like to add a station?" << std::endl;
+	std::getline(std::cin, lineNumber);
+	while (!isValidLineNumber(lineNumber))
+	{
+		std::cout << "Wrong input! Try again! (a positive number expected)" << std::endl;
+		std::cout << "Please enter the number of the station you'd like to add: ";
+		std::getline(std::cin, lineNumber);
+	}
+
+	std::cout << "From which station on would you like to add a route?" << std::endl;
+	std::getline(std::cin, fromStation);
+	while (!isValidStationFormat(fromStation))
+	{
+		std::cout << "Invalid input! Try again." << std::endl;
+		std::cout << "From which station on would you like to add a route?" << std::endl;
+		std::getline(std::cin, fromStation);
+	}
+
+	std::cout << "To which station on would you like to add a route?" << std::endl;
+	std::getline(std::cin, toStation);
+	while (!isValidStationFormat(toStation))
+	{
+		std::cout << "Invalid input! Try again!" << std::endl;
+		std::cout << "To which station on would you like to add a route?" << std::endl;
+		std::getline(std::cin, toStation);
+	}
+
+	std::cout << "How many stations does this route consist of?";
+	std::getline(std::cin, routeLength);
+	while (!isValidLineNumber(routeLength))
+	{
+		std::cout << "Wrong input! Try again. (positive whole number expected)";
+		std::cout << "How many stations does this route consist of?";
+		std::getline(std::cin, routeLength);
+	}
+
+	stationsToAdd.resize(stoi(routeLength));
+
+	bool addMoreStations = false;
+	std::cout << "Please input the line's stations in order:\n*(station format: stationNumber-stationName)*\n";
+	for (int i{0}; i < stoi(routeLength); ++i)
+	{
+		std::string stationToAdd;
+		std::getline(std::cin, stationToAdd);
+		if (isValidStationFormat(stationToAdd))
+		{
+			size_t delimiterIndex = stationToAdd.find('-');
+			std::string inputStationNumber = stationToAdd.substr(0, delimiterIndex);
+			std::string inputStationName = stationToAdd.substr(delimiterIndex + 1);
+			stationsToAdd[i] = Station(stoi(inputStationNumber), inputStationName);
+		}
+		else
+		{
+			std::cout << "Invalid input! Try again." << std::endl;
+			std::cout << "Station format incompatible! (expected: *stationNr - stationName*)";
+			--i;
+		}
+	}
+
+	this->fileManager.addRoute(lineNumber, fromStation, toStation, stationsToAdd);
+}
+
+void Instrument::removeRoute()
+{
+	std::string lineNumber, fromStation, toStation;
+
+	std::cout << "To which line would you like to remove a station?" << std::endl;
+	std::getline(std::cin, lineNumber);
+	while (!isValidLineNumber(lineNumber))
+	{
+		std::cout << "Wrong input! Try again! (a positive number expected)" << std::endl;
+		std::cout << "Please enter the number of the station you'd like to add: ";
+		std::getline(std::cin, lineNumber);
+	}
+
+	std::cout << "From which station on would you like to remove a route?" << std::endl;
+	std::getline(std::cin, fromStation);
+	while (!isValidStationFormat(fromStation))
+	{
+		std::cout << "Invalid input! Try again!" << std::endl;
+		std::cout << "Please input the station you'd like to remove: ";
+		std::getline(std::cin, fromStation);
+	}
+
+	std::cout << "To which station on would you like to remove a route?" << std::endl;
+	std::getline(std::cin, toStation);
+	while (!isValidStationFormat(toStation))
+	{
+		std::cout << "Invalid input! Try again!" << std::endl;
+		std::cout << "Please input the station you'd like to remove: ";
+		std::getline(std::cin, fromStation);
+	}
+
+	this->fileManager.removeRoute(lineNumber, fromStation, toStation);
+}
+
 void Instrument::addLine()
 {
 	std::string lineToAddToFile		= getLineToAddToFile();
-	//std::string scheduleToAddToFule = getScheduleToAdd();
+	//std::string scheduleToAddToFile = getScheduleToAdd();
 
 	this->fileManager.addLine(lineToAddToFile);
 }
@@ -60,7 +222,7 @@ void Instrument::removeLine()
 	std::string lineNrToRemove;
 
 	std::cout << "Please input the line number you'd like to remove: ";
-	std::cin >> lineNrToRemove;
+	std::getline(std::cin, lineNrToRemove);
 	while (!isValidLineNumber(lineNrToRemove))
 	{
 		system("CLS");
@@ -69,12 +231,6 @@ void Instrument::removeLine()
 	}
 
 	this->fileManager.removeLine(lineNrToRemove);
-}
-
-void Instrument::setFileManager(const std::string& filename)
-{
-	FileManager result = FileManager(filename);
-	this->fileManager = result;
 }
 
 Instrument::~Instrument()
@@ -97,7 +253,7 @@ Instrument::~Instrument()
 const MenuItem* Instrument::_getChoice(std::vector<const MenuItem*>& menu)
 {
 	std::string choice;
-	std::cin >> choice;
+	std::getline(std::cin, choice);
 
 	for (const MenuItem* mItem : menu)
 	{
@@ -116,7 +272,7 @@ bool Instrument::isValidLineNumber(const std::string& lineNumber)
 			if (c < 49 || c > 58)
 				return false;
 		}
-		else 
+		else
 		{
 			if (c < 48 || c > 58)
 				return false;
@@ -154,18 +310,30 @@ bool Instrument::isValidYesNoAnswer(char c)
 	return c == 'y' || c == 'n';
 }
 
+bool Instrument::isNumber(const std::string& stringToCheck)
+{
+	for (const char& c : stringToCheck)
+	{
+		if (!isdigit(c))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 std::string Instrument::getLineToAddToFile()
 {
 	std::string				lineNrToAdd, lineToAddToTextFile;
 	std::vector<Station>	stationsToAdd;
 
-	std::cout << "Please input the line number you'd like to remove: ";
-	std::cin >> lineNrToAdd;
+	std::cout << "Please input the line number you'd like to add ";
+	std::getline(std::cin, lineNrToAdd);
 	while (!isValidLineNumber(lineNrToAdd))
 	{
 		system("CLS");
 		std::cout << "Invalid input. Try again!" << std::endl;
-		std::cout << "Please input the line number you'd like to remove: ";
+		std::cout << "Please input the line number you'd like to add: ";
 	}
 
 	lineToAddToTextFile = lineNrToAdd;
@@ -176,23 +344,23 @@ std::string Instrument::getLineToAddToFile()
 	do
 	{
 		std::string stationToAdd;
-		std::cin >> stationToAdd;
+		std::getline(std::cin, stationToAdd);
 		if (isValidStationFormat(stationToAdd))
 		{
 			size_t delimiterIndex = stationToAdd.find('-');
 			std::string inputStationNumber = stationToAdd.substr(0, delimiterIndex);
 			std::string inputStationName = stationToAdd.substr(delimiterIndex + 1);
 			lineToAddToTextFile.append(inputStationNumber).append("-").append(inputStationName);
-			stationsToAdd.push_back(Station(stoi(inputStationNumber), inputStationNumber));
+			stationsToAdd.push_back(Station(stoi(inputStationNumber), inputStationName));
 
 			std::cout << "Would you like to add another one? (y/n)" << std::endl;
 			char answer;
-			std::cin >> answer;
+			std::cin.get(answer);
 			while (!isValidYesNoAnswer(answer))
 			{
 				std::cout << "Invalid answer! Try again (y/n)" << '\r';
 				std::cout << "Would you like to add another one? (y/n)" << '\n';
-				std::cin >> answer;
+				std::cin.get(answer);
 			}
 
 			if (answer == 'y')

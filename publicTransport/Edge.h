@@ -11,4 +11,5 @@ struct Edge
     Edge(Station, size_t _weight = DEFAULT_EDGE_WEIGHT);
 
     bool operator==(const Edge&) const;
+    void print();
 };

@@ -16,16 +16,20 @@ public:
 
 	void display(std::vector<const MenuItem*>&);
 	const MenuItem* getChoice(std::vector<const MenuItem*>&);
+	void addStation();
+	void removeStation();
+	void addRoute();
+	void removeRoute();
 	void addLine();
 	void removeLine();
 
 	~Instrument();
-private:
-	void setFileManager(const std::string&);
+private:;
 	static const MenuItem* _getChoice(std::vector<const MenuItem*>&);
 	bool isValidLineNumber(const std::string&);
 	bool isValidStationFormat(const std::string&);
 	bool isValidYesNoAnswer(char c);
+	bool isNumber(const std::string&);
 	std::string getLineToAddToFile();
 };
 

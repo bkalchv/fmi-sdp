@@ -12,6 +12,9 @@ using namespace std;
 
 size_t readChangeableColorsAmount()
 {
+
+    cout << "How many are the changeable colors?" << endl;
+
     size_t amount;
     cin >> amount;
     while (amount < 0)
@@ -25,10 +28,14 @@ size_t readChangeableColorsAmount()
 
 vector<tuple<char, char, int>> changeableColorsReader()
 { 
-    vector<tuple<char, char, int>> changeableColors(readChangeableColorsAmount());
+    size_t changeableColorsAmount = readChangeableColorsAmount();
+    vector<tuple<char, char, int>> changeableColors(changeableColorsAmount);
 
     for (size_t i{0}; i < changeableColors.size(); ++i)
     {
+
+        cout << "Please input the initial color of the bead: ";
+
         char fromColorInput;
         cin >> fromColorInput;
         while (!(Bead::isValidColor(fromColorInput)))
@@ -37,6 +44,8 @@ vector<tuple<char, char, int>> changeableColorsReader()
             cin >> fromColorInput;
         }
 
+        cout << "Please input the result color of the bead: "
+
         char toColorInput;
         cin >> toColorInput;
         while (!(Bead::isValidColor(toColorInput)))
@@ -44,6 +53,8 @@ vector<tuple<char, char, int>> changeableColorsReader()
             cout << "Invalid color input. Try again!" << endl;
             cin >> toColorInput;
         }
+
+        cout << "Please input the cost of the transition: "
 
         int cost;
         cin >> cost;
@@ -264,15 +275,15 @@ int main()
         cout << "Nearest common vertex index: " << nearestCommonVertexIndex << endl;
         int** matrixCosts = graph.shortestPathsMatrix();
 
-        int cheapestTransitions = graph.getShortestPathCostFromTo(matrixCosts, necklace1Index, nearestCommonVertexIndex) + graph.getShortestPathCostFromTo(matrixCosts, necklace2Index, nearestCommonVertexIndex);
+        int cheapestTransition = graph.getShortestPathCostFromTo(matrixCosts, necklace1Index, nearestCommonVertexIndex) + graph.getShortestPathCostFromTo(matrixCosts, necklace2Index, nearestCommonVertexIndex);
 
-        cout << cheapestTransitions << endl;
+        cout << "Cheapest cost: " << cheapestTransition << endl;
 
         for (const pair<Necklace, size_t>& p : verticesToIndex)
         {
             if (p.second == nearestCommonVertexIndex)
             {
-                p.first.printNecklace(); cout << endl;
+                cout << "Nearest common vertex: "; p.first.printNecklace();
             }
         }
 

@@ -1,5 +1,4 @@
 #include <iostream>
-#include <list>
 #include <vector>
 #include <unordered_map>
 #include <set>
@@ -11,198 +10,24 @@
 
 using namespace std;
 
-//struct Vertex {
-//    Necklace necklace;
-//    bool visited;
-//
-//    Vertex()
-//    {
-//        necklace = Necklace({ Bead('!') });
-//        visited = false;
-//    }
-//
-//    Vertex(Necklace _necklace)
-//    {
-//        necklace = Necklace(_necklace.beads);
-//        visited = false;
-//    }
-//
-//    bool isEqual(const Vertex& otherVertex) const
-//    {
-//        return (this->necklace.isEqual(otherVertex.necklace));
-//    }
-//};
-//
-//using Edge = pair<Vertex, int>;
-//using AdjacencyLists = vector<list<Edge>>;
-//
-//class Graph {
-//    size_t          size;
-//    size_t          graphCapacity;
-//    AdjacencyLists  adjacencyLists;
-//
-//public:
-//    Graph(size_t _verticesAmount) : graphCapacity{ _verticesAmount }
-//    {
-//        for (size_t i{ 0 }; i < graphCapacity; ++i)
-//        {
-//            Vertex newVertex = Vertex();
-//            Edge   newVertexDefaultEdge = Edge(newVertex, 0);
-//            list<Edge> newVertexDefaultAdjacencyList = list<Edge>(1);
-//            newVertexDefaultAdjacencyList.push_back(newVertexDefaultEdge);
-//            adjacencyLists.push_back(newVertexDefaultAdjacencyList);
-//        }
-//        this->graphCapacity = adjacencyLists.size();
-//        this->size = 0;
-//    }
-//
-//    Graph(const Graph& other_graph)
-//    {
-//        this->size = 0;
-//
-//        for (size_t i{ 0 }; i < other_graph.graphCapacity; ++i)
-//        {
-//            adjacencyLists.at(i).pop_front();
-//            adjacencyLists.at(i).push_front(other_graph.adjacencyLists.at(i).front());
-//            ++size;
-//
-//            if (other_graph.adjacencyLists.at(i).size() > 1)
-//            {
-//                for (Edge otherGraphAdjacentEdge : other_graph.adjacencyLists.at(i))
-//                {
-//                    Vertex adjacentVertex = otherGraphAdjacentEdge.first;
-//                    int    adjacentCost = otherGraphAdjacentEdge.second;
-//                    adjacencyLists.at(i).push_back(make_pair(adjacentVertex, adjacentCost));
-//                }
-//            }
-//        }
-//
-//        graphCapacity = other_graph.graphCapacity;
-//    }
-//
-//    void operator= (const Graph& other_graph)
-//    {
-//        for (size_t i{ 0 }; i < other_graph.graphCapacity; ++i)
-//        {
-//            while (!adjacencyLists.at(i).empty())
-//            {
-//                adjacencyLists.at(i).pop_front();
-//            }
-//
-//            if (!other_graph.adjacencyLists.at(i).empty())
-//            {
-//                for (Edge otherGraphAdjacentEdge : other_graph.adjacencyLists.at(i))
-//                {
-//                    Vertex adjacentVertex = otherGraphAdjacentEdge.first;
-//                    int    adjacentCost = otherGraphAdjacentEdge.second;
-//                    adjacencyLists.at(i).push_back(make_pair(adjacentVertex, adjacentCost));
-//                    ++size;
-//                }
-//            }
-//        }
-//
-//        if (graphCapacity < other_graph.graphCapacity)
-//        {
-//            graphCapacity = other_graph.graphCapacity;
-//        }
-//
-//    }
-//
-//    AdjacencyLists& getAdjacencyLists()
-//    {
-//        return this->adjacencyLists;
-//    }
-//
-//    void increaseVerticesAmount()
-//    {
-//        this->graphCapacity = ++graphCapacity;
-//    }
-//
-//    void increaseGraphSize()
-//    {
-//        this->size = ++size;
-//    }
-//
-//    void increaseVerticesAmount(size_t manyTimes)
-//    {
-//        for (size_t i{ 0 }; i < manyTimes; ++i)
-//        {
-//            increaseVerticesAmount();
-//        }
-//    }
-//
-//    bool vertexAlreadyExistsInGraph(const Vertex& ver)
-//    {
-//        for (size_t i{ 0 }; i < this->graphCapacity; ++i)
-//        {
-//            if (!this->adjacencyLists.at(i).front().first.necklace.isEqual(Necklace({ Bead('!') })))
-//            {
-//                Necklace currentNecklace = this->adjacencyLists.at(i).front().first.necklace;
-//                if (currentNecklace.isEqual(ver.necklace))
-//                {
-//                    return true;
-//                }
-//            }
-//        }
-//        return false;
-//    }
-//
-//    int indexOfVertexInGraph(const Vertex& vertex)
-//    {
-//        if (vertexAlreadyExistsInGraph(vertex))
-//        {
-//            for (size_t i{ 0 }; i < this->graphCapacity; ++i)
-//            {
-//                Necklace vertexNecklace = vertex.necklace;
-//                Vertex currentVertex = this->adjacencyLists.at(i).front().first;
-//                Necklace currentNecklace = currentVertex.necklace;
-//                if (vertexNecklace.isEqual(currentNecklace))
-//                {
-//                    return i;
-//                }
-//            }
-//        }
-//
-//        return -1;
-//    }
-//
-//    void addEdge(const Vertex& from, const Vertex& to, int cost)
-//    {
-//        if (indexOfVertexInGraph(from) != -1 && indexOfVertexInGraph(to) != -1)
-//        {
-//            int fromIndex = indexOfVertexInGraph(from);
-//            int toIndex = indexOfVertexInGraph(to);
-//
-//            this->adjacencyLists.at(fromIndex).push_back(make_pair(to, cost));
-//        }
-//    }
-//
-//    void printGraph()
-//    {
-//        for (size_t i{ 0 }; i < this->graphCapacity; ++i)
-//        {
-//            std::cout << "[" << i << "]:";
-//            this->adjacencyLists.at(i).front().first.necklace.printNecklace();
-//            std::cout << endl;
-//            for (const Edge& currentEdge : this->adjacencyLists.at(i))
-//            {
-//                if (!currentEdge.first.necklace.isEqual(this->adjacencyLists.at(i).front().first.necklace))
-//                {
-//                    std::cout << " ->";
-//                    currentEdge.first.necklace.printNecklace();
-//                    std::cout << "(" << currentEdge.second << ")";
-//                    std::cout << endl;
-//                }
-//            }
-//        }
-//    }
-//};
+size_t readChangeableColorsAmount()
+{
+    size_t amount;
+    cin >> amount;
+    while (amount < 0)
+    {
+        cout << "Invalid amount of changeable color(s) input. Try again!" << endl;
+        cin >> amount;
+    }
 
-vector<tuple<char, char, int>> changeableColorsReader(/*size_t changeableColorsAmount*/)
+    return amount;
+}
+
+vector<tuple<char, char, int>> changeableColorsReader()
 { 
-    vector<tuple<char, char, int>> changeableColors /*(changeableColorsAmount)*/;
+    vector<tuple<char, char, int>> changeableColors(readChangeableColorsAmount());
 
-    /*for (size_t i{0}; i < changeableColors.size(); ++i)
+    for (size_t i{0}; i < changeableColors.size(); ++i)
     {
         char fromColorInput;
         cin >> fromColorInput;
@@ -228,13 +53,9 @@ vector<tuple<char, char, int>> changeableColorsReader(/*size_t changeableColorsA
             cin >> cost;
         }
 
-        tuple<char, char, int> currentChangeableColorTuple;
-        changeableColors[i] = currentChangeableColorTuple;
-    }*/
-
-    changeableColors.push_back(make_tuple<char, char, int>('A', 'a', 3));
-    changeableColors.push_back(make_tuple<char, char, int>('d', 'e', 3));
-    changeableColors.push_back(make_tuple<char, char, int>('f', 'e', 1));
+        tuple<char, char, int> currentTuple = make_tuple(fromColorInput, toColorInput, cost);
+        changeableColors[i] = currentTuple;
+    }
 
     return changeableColors;
 }
@@ -422,14 +243,13 @@ int main()
     set<Necklace> vertices = generateVertices(necklace1, necklace2, changeableColors);
     unordered_map<Necklace, size_t, NecklaceHasher> verticesToIndex = generateVerticesMap(vertices);
 
-    cout << "Vertices: " << endl;
-    size_t i{ 0 };
-
-    for (const Necklace& n : vertices)
-    {
-        cout << "[" << i << "] "; n.printNecklace(); cout << endl;
-        ++i;
-    }
+    //cout << "Vertices: " << endl;
+    //size_t i{ 0 };
+    //for (const Necklace& n : vertices)
+    //{
+    //    cout << "[" << i << "] "; n.printNecklace(); cout << endl;
+    //    ++i;
+    //}
 
     Graph graph(vertices.size());
     initGraph(graph, vertices, verticesToIndex, changeableColors);

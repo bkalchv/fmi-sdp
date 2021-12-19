@@ -3,6 +3,8 @@
 #include <string>
 #include <list>
 
+#include<stdexcept>
+
 using std::string;
 using std::list;
 
@@ -12,7 +14,7 @@ public:
     Hierarchy(Hierarchy&& r) noexcept;
     Hierarchy(const Hierarchy& r);
     Hierarchy(const string& data);
-    ~Hierarchy() noexcept;
+    //Hierarchy() noexcept;
     void operator=(const Hierarchy&) = delete;
 
     string print()const;
@@ -35,17 +37,28 @@ public:
     Hierarchy join(const Hierarchy& right) const;
 
     //If you need it - add more public methods here
+
+
 private:
     //Add whatever you need here
     struct Node {
         string managerName;
-        list<Node> subordinates;
+        list<Node*> subordinates;
 
         Node(const string& _managerName) : managerName(_managerName) {};
-        Node(const string& _managerName, const std::initializer_list<Node> _subordinates) : managerName(_managerName) {
-            for (const Node& node : _subordinates) {
-                this->subordinates.push_back(node);
+        Node(const string& _managerName, const std::initializer_list<Node*> _subordinates) : managerName(_managerName) {
+            for (Node* const pNode : _subordinates) {
+                this->subordinates.push_back(pNode);
             }
         };
     };
+
+    Node* root;
+
+public:
+    Hierarchy() : root(new Node("Uspeshnia")) {};
+    list<Node*> getRootSubordinates() { return this->root->subordinates; }
+    list<Node*> getNodeSubordinates(Node* const _node) { return _node->subordinates; }
+    Node* findNodeByManagerName(const string&);
+    void addToHierachy(const string&, const string&);
 };

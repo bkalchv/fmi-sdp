@@ -11,10 +11,11 @@ using std::list;
 class Hierarchy
 {
 public:
-    Hierarchy(Hierarchy&& r) noexcept;
+    Hierarchy() noexcept : root(new Node("Uspeshnia")) {};
+    Hierarchy(Hierarchy&&) noexcept;
     Hierarchy(const Hierarchy& r);
-    Hierarchy(const string& data);
-    //Hierarchy() noexcept;
+    //Hierarchy(const string& data); // TODO
+    ~Hierarchy();
     void operator=(const Hierarchy&) = delete;
 
     string print()const;
@@ -42,23 +43,37 @@ public:
 private:
     //Add whatever you need here
     struct Node {
-        string managerName;
+        string name;
         list<Node*> subordinates;
 
-        Node(const string& _managerName) : managerName(_managerName) {};
-        Node(const string& _managerName, const std::initializer_list<Node*> _subordinates) : managerName(_managerName) {
+        Node(const string& _name) : name(_name) {};
+        Node(const string& _name, const std::initializer_list<Node*> _subordinates) : name(_name) {
             for (Node* const pNode : _subordinates) {
                 this->subordinates.push_back(pNode);
             }
         };
-    };
+        string getName() const { return this->name; }
 
+        struct NodePointerComparator {
+            bool operator() (const Node* pNode1, const Node* pNode2) {
+                if (pNode1 != nullptr && pNode2 != nullptr) {
+                    return pNode1->name < pNode2->name;
+                }
+            }
+        };
+
+    };
     Node* root;
 
+    Node*   findNodeByManagerName(const string&) const;
+    Node*   findNodeByManagerName(const string&);
+    bool    isNodeOverloaded(const Node*, int overloadLevel) const;
+    void    eraseHierarchy(Node*&);
+    int     hierarchyHeight(const Node*) const;
+    Node*   copyNode(const Node*);
+
 public:
-    Hierarchy() : root(new Node("Uspeshnia")) {};
-    list<Node*> getRootSubordinates() { return this->root->subordinates; }
-    list<Node*> getNodeSubordinates(Node* const _node) { return _node->subordinates; }
-    Node* findNodeByManagerName(const string&);
+    list<Node*> getRootSubordinates() const { return this->root->subordinates; }
+    list<Node*> getNodeSubordinates(Node* const _node) const { return _node->subordinates; }
     void addToHierachy(const string&, const string&);
 };

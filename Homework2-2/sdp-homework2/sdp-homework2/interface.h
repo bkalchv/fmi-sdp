@@ -8,6 +8,9 @@
 using std::string;
 using std::list;
 
+const size_t SALARY_PER_DIRECT_SUBORDINATE      = 500;
+const size_t SALARY_PER_INDIRECT_SUBORDINATE    = 50;
+
 class Hierarchy
 {
 public:
@@ -39,7 +42,6 @@ public:
 
     //If you need it - add more public methods here
 
-
 private:
     //Add whatever you need here
     struct Node {
@@ -65,15 +67,17 @@ private:
     };
     Node* root;
 
-    Node*   findNodeByManagerName(const string&) const;
-    Node*   findNodeByManagerName(const string&);
-    bool    isNodeOverloaded(const Node*, int overloadLevel) const;
-    void    eraseHierarchy(Node*&);
-    int     hierarchyHeight(const Node*) const;
-    Node*   copyNode(const Node*);
+    const Node*     findNodeByName(const string&) const;
+    Node*           findNodeByName(const string&);
+    
+    bool            isNodeOverloaded(const Node*, int overloadLevel) const;
+    void            eraseHierarchy(Node*&);
+    int             hierarchyHeight(const Node*) const;
+    Node*           copyNode(const Node*);
+    int             countAllSubordinatesOfNode(const Node*) const;
+    int             countIndirectSubordinates(const Node*) const;
 
 public:
-    list<Node*> getRootSubordinates() const { return this->root->subordinates; }
-    list<Node*> getNodeSubordinates(Node* const _node) const { return _node->subordinates; }
-    void addToHierachy(const string&, const string&);
+    void            addToHierachy(const string&, const string&);
+    //int         countIndirectSubordinates(const std::string&) const;
 };

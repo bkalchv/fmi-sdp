@@ -66,9 +66,11 @@ int main() {
 	Hierarchy h = HierarchyFileReader::readHierarchyFromFile("HierarchyA.txt");
 	//std::cout << h.manager("Mariya") << std::endl;
 	std::cout << h.print() << std::endl;
-	std::cout << "overloaded amount: " << h.num_overloaded() << std::endl;
-	std::cout << "height: " << h.longest_chain() << std::endl;
-	Hierarchy h1 = h;
-	std::cout << h1.print() << std::endl;
+	std::cout << "Employees amount in hierarchy: " << h.num_employees() << std::endl;
+	std::cout << "Overloaded amount: " << h.num_overloaded() << std::endl;
+	std::cout << "Height: " << h.longest_chain() << std::endl;
+	//Hierarchy h1 = h;
+	//std::cout << h1.print() << std::endl;
+
 	return 0;
 }

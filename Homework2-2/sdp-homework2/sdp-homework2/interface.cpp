@@ -4,6 +4,7 @@
 #include <iostream>
 
 using std::queue;
+
 Hierarchy::Hierarchy(Hierarchy&& rhsHierarchy) noexcept
 {
 	this->root = nullptr;
@@ -77,25 +78,7 @@ bool Hierarchy::find(const string& name) const
 
 int Hierarchy::num_employees() const
 {
-	if (this->root == nullptr) return -1;
-
-	int employeesCounter = 0;
-
-	queue<Node*> bfsQueue;
-	bfsQueue.push(this->root);
-
-	while (!bfsQueue.empty()) {
-		Node* pCurrent = bfsQueue.front();
-		bfsQueue.pop();
-
-		// Pushes children in queue, if there are children of pCurrent
-		for (std::list<Hierarchy::Node*>::iterator it = pCurrent->subordinates.begin(); it != pCurrent->subordinates.end(); it++) {
-			employeesCounter++;
-			bfsQueue.push(*it);
-		}
-	}
-
-	return employeesCounter;
+	return this->countAllSubordinatesOfNode(this->root);
 }
 
 int Hierarchy::num_overloaded(int level) const
@@ -106,28 +89,55 @@ int Hierarchy::num_overloaded(int level) const
 
 	int overloadedManagersAmount = 0;
 
-	queue<Node*> bfsQueue;
+	queue<const Node*> bfsQueue;
 	bfsQueue.push(this->root);
 
 	while (!bfsQueue.empty()) {
-		Node* pCurrent = bfsQueue.front();
+		const Node* pCurrent = bfsQueue.front();
 		bfsQueue.pop();
 		if (!this->isNodeOverloaded(pCurrent, level))
 			continue;
 		else {
 			 overloadedManagersAmount++;
 
-			for (std::list<Hierarchy::Node*>::iterator it = pCurrent->subordinates.begin(); it != pCurrent->subordinates.end(); it++) {
-				bfsQueue.push(*it);
-			}
-		
+			 for (const Node* subordinate : pCurrent->subordinates) {
+				 bfsQueue.push(subordinate);
+			 }
 		}
 	}
 	
 	return overloadedManagersAmount;
 }
 
-Hierarchy::Node* Hierarchy::findNodeByManagerName(const string& _managerName) const
+const Hierarchy::Node* Hierarchy::findNodeByName(const string& _name) const
+{
+	if (this->root == nullptr) return nullptr;
+
+	queue<const Node*> bfsQueue;
+	bfsQueue.push(this->root);
+
+	while (!bfsQueue.empty()) {
+		size_t bfsQueueCurrentSize = bfsQueue.size();
+
+		const Node* pCurrent = bfsQueue.front();
+		bfsQueue.pop();
+
+		if (pCurrent->name == _name) return pCurrent;
+
+		// Pushes children in queue, if there are children of pCurrent
+		for (const Node* subordinate : pCurrent->subordinates) {
+			bfsQueue.push(subordinate);
+		}
+	}
+
+	// Stays here for debugging purposes
+	string exceptionMessage = "findNodeByManagerName: didnt find manager with name: " + _name;
+	//throw std::runtime_error(exceptionMessage);
+	std::cout << exceptionMessage << std::endl;
+	return nullptr;
+}
+
+Hierarchy::Node* Hierarchy::findNodeByName(const string& _managerName)
 {
 	if (this->root == nullptr) return nullptr;
 
@@ -155,32 +165,32 @@ Hierarchy::Node* Hierarchy::findNodeByManagerName(const string& _managerName) co
 	return nullptr;
 }
 
-Hierarchy::Node* Hierarchy::findNodeByManagerName(const string& _managerName)
+int Hierarchy::countIndirectSubordinates(const Node* pNode) const
 {
-	if (this->root == nullptr) return nullptr;
+	/*int allSubordinates = this->countAllSubordinatesOfNode(pNode);
 
-	queue<Node*> bfsQueue;
-	bfsQueue.push(this->root);
+	return allSubordinates - pNode->subordinates.size();*/
+
+	int indirectSubordinates = 0;
+
+	queue<const Node*> bfsQueue;
+	for (Node* pSubordinate : pNode->subordinates) {
+		bfsQueue.push(pSubordinate);
+	}
 
 	while (!bfsQueue.empty()) {
-		size_t bfsQueueCurrentSize = bfsQueue.size();
-
-		Node* pCurrent = bfsQueue.front();
+		const Node* pCurrent = bfsQueue.front();
 		bfsQueue.pop();
 
-		if (pCurrent->name == _managerName) return pCurrent;
+		indirectSubordinates += pCurrent->subordinates.size();
 
 		// Pushes children in queue, if there are children of pCurrent
-		for (std::list<Hierarchy::Node*>::iterator it = pCurrent->subordinates.begin(); it != pCurrent->subordinates.end(); it++) {
-			bfsQueue.push(*it);
+		for (const Node* subordinate : pCurrent->subordinates) {
+			bfsQueue.push(subordinate);
 		}
 	}
 
-	// Stays here for debugging purposes
-	string exceptionMessage = "findNodeByManagerName: didnt find manager with name: " + _managerName;
-	//throw std::runtime_error(exceptionMessage);
-	std::cout << exceptionMessage << std::endl;
-	return nullptr;
+	return indirectSubordinates;
 }
 
 bool Hierarchy::isNodeOverloaded(const Node* nodeToCheck, int overloadLevel) const
@@ -193,24 +203,7 @@ bool Hierarchy::isNodeOverloaded(const Node* nodeToCheck, int overloadLevel) con
 
 	if (directSubordinates > overloadLevel) return true;
 
-	int indirectSubordinates = 0;
-
-	queue<Node*> bfsQueue;
-	for (Node* pSubordinate : nodeToCheck->subordinates) {
-		bfsQueue.push(pSubordinate);
-	}
-
-	while (!bfsQueue.empty()) {
-		Node* pCurrent = bfsQueue.front();
-		bfsQueue.pop();
-
-		indirectSubordinates += pCurrent->subordinates.size();
-
-		// Pushes children in queue, if there are children of pCurrent
-		for (std::list<Hierarchy::Node*>::iterator it = pCurrent->subordinates.begin(); it != pCurrent->subordinates.end(); it++) {
-			bfsQueue.push(*it);
-		}
-	}
+	int indirectSubordinates = this->countIndirectSubordinates(nodeToCheck);
 
 	return (directSubordinates + indirectSubordinates) > overloadLevel;
 }
@@ -253,12 +246,35 @@ Hierarchy::Node* Hierarchy::copyNode(const Node* fromNode)
 	return toNode;
 }
 
+int Hierarchy::countAllSubordinatesOfNode(const Node* pNode) const
+{
+	if (pNode == nullptr) return -1;
+
+	int subordinatesCounter = 0;
+
+	queue<const Node*> bfsQueue;
+	bfsQueue.push(pNode);
+
+	while (!bfsQueue.empty()) {
+		const Node* pCurrent = bfsQueue.front();
+		bfsQueue.pop();
+
+		// Pushes children in queue, if there are children of pCurrent
+		for (const Node* subordinate : pCurrent->subordinates) {
+			subordinatesCounter++;
+			bfsQueue.push(subordinate);
+		}
+	}
+
+	return subordinatesCounter;
+}
+
 void Hierarchy::addToHierachy(const string& _managerName, const string& _subordinateName)
 {
 	bool managerExists = this->find(_managerName);
 	
 	if (managerExists) {
-		Node* pManagerNode = this->findNodeByManagerName(_managerName);
+		Node* pManagerNode = this->findNodeByName(_managerName);
 		if (pManagerNode != nullptr) {
 			pManagerNode->subordinates.push_back(new Node(_subordinateName));
 			pManagerNode->subordinates.sort(Hierarchy::Node::NodePointerComparator());
@@ -268,19 +284,28 @@ void Hierarchy::addToHierachy(const string& _managerName, const string& _subordi
 	}
 }
 
+//int Hierarchy::countIndirectSubordinates(const std::string& name) const
+//{
+//	const Hierarchy::Node* pNodeWithName = this->findNodeByName(name);
+//	if (pNodeWithName == nullptr)
+//		return 0;
+//	else
+//		return this->countIndirectSubordinates(pNodeWithName);
+//}
+
 string Hierarchy::manager(const string& name) const
 {
 	if (this->root->name == name) return "none";
 
 	if (this->find(name) && this->root != nullptr) {
 		string managerName;
-		queue<Node*> bfsQueue;
+		queue<const Node*> bfsQueue;
 		bfsQueue.push(this->root);
 
 		while (!bfsQueue.empty()) {
 			size_t bfsQueueCurrentSize = bfsQueue.size();
 
-			Node* pCurrent = bfsQueue.front();
+			const Node* pCurrent = bfsQueue.front();
 			bfsQueue.pop();
 
 			for (const Hierarchy::Node* pNode: pCurrent->subordinates) {
@@ -293,8 +318,8 @@ string Hierarchy::manager(const string& name) const
 			if (!managerName.empty()) return managerName;
 
 			// Pushes children in queue, if there are children of pCurrent
-			for (std::list<Hierarchy::Node*>::iterator it = pCurrent->subordinates.begin(); it != pCurrent->subordinates.end(); it++) {
-				bfsQueue.push(*it);
+			for (const Node* subordinate : pCurrent->subordinates) {
+				bfsQueue.push(subordinate);
 			}
 		}
 	}
@@ -302,7 +327,7 @@ string Hierarchy::manager(const string& name) const
 
 int Hierarchy::num_subordinates(const string& name) const
 {
-	Hierarchy::Node* nodeWithName = this->findNodeByManagerName(name);
+	const Hierarchy::Node* nodeWithName = this->findNodeByName(name);
 
 	if (nodeWithName != nullptr) {
 		return nodeWithName->subordinates.size();
@@ -311,4 +336,16 @@ int Hierarchy::num_subordinates(const string& name) const
 		std::cout << "num_subordinates: returning -1, because node with name wasnt found in the tree." << std::endl;
 		return -1;
 	}
+}
+
+unsigned long Hierarchy::getSalary(const string& who) const
+{
+	const Node* pWho = this->findNodeByName(who);
+
+	if (pWho != nullptr) {
+		int pWhoDirectSubordinates = pWho->subordinates.size();
+		int pWhoIndirectSubordinates = this->countIndirectSubordinates(pWho);
+		return pWhoDirectSubordinates * SALARY_PER_DIRECT_SUBORDINATE + pWhoIndirectSubordinates * SALARY_PER_DIRECT_SUBORDINATE;
+	} else 
+		return -1;
 }

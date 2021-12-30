@@ -18,11 +18,19 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\catch.hpp" />
+    <ClInclude Include="..\interface.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\interface.cpp" />
+    <ClCompile Include="..\Tests.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{5fcc411f-726c-4765-8c77-03238702a113}</ProjectGuid>
-    <RootNamespace>sdphomework2</RootNamespace>
+    <ProjectGuid>{65e3eb83-e5ab-4294-a41d-2706cdbfa34c}</ProjectGuid>
+    <RootNamespace>Tests</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -138,24 +146,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="interface.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="interface.cpp" />
-    <ClCompile Include="main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="Hierarchy2.txt" />
-    <Text Include="HierarchyA.txt" />
-    <Text Include="HierarchyB.txt" />
-    <Text Include="Hierarchy1.txt" />
-    <Text Include="HierarchyDiscordExample1.txt" />
-    <Text Include="HierarchyDiscordExample2.txt" />
-    <Text Include="lozenec.txt" />
-    <Text Include="large.txt" />
-    <Text Include="lozenecNew.txt" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

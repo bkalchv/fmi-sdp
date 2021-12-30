@@ -15,45 +15,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="interface.h">
+    <ClInclude Include="..\catch.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\interface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="interface.cpp">
+    <ClCompile Include="..\Tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="..\interface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="HierarchyA.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="HierarchyB.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="Hierarchy1.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="Hierarchy2.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="HierarchyDiscordExample1.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="HierarchyDiscordExample2.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="lozenec.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="large.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
-    <Text Include="lozenecNew.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
   </ItemGroup>
 </Project>

@@ -2,8 +2,53 @@
 #include <fstream>
 #include <sstream>
 #include <cassert>
+#include <list>
+#include <vector>
 
 #include "interface.h"
+
+static std::vector<string> commands =
+{
+	"help",
+	"load -your_object_name- -your_filename_-(optional)",
+	"save -your_object_name- -your_filename_-(optional)",
+	"find",
+	"num_subordinates",
+	"manager",
+	"num_employees",
+	"overloaded",
+	"join",
+	"fire",
+	"hire",
+	"salary",
+	"incorporate",
+	"modernize",
+	"exit"
+};
+
+std::vector<std::pair<std::string, Hierarchy>> hierarchies;
+
+bool hierarchiesContainObjectWithName(const string& _objectName) {
+	for (const std::pair<std::string, Hierarchy>& p : hierarchies) {
+		if (p.first == _objectName) return true;
+	}
+	return false;
+}
+
+void printHierarchyWithObjectName(const string& _objectName) {
+	for (const std::pair<std::string, Hierarchy>& p : hierarchies) {
+		if (p.first == _objectName) std::cout << p.first << ":\n" << p.second.print() << std::endl;
+	}
+}
+
+void saveHierarchyWithObjectNameInFilewWithName(const string& _objectName, const string& _filename) {
+	std::ofstream fileToWriteTo;
+	fileToWriteTo.open(_filename);
+	for (const std::pair<std::string, Hierarchy>& p : hierarchies) {
+		if (p.first == _objectName) fileToWriteTo << p.second.print();
+	}
+	fileToWriteTo.close();
+}
 
 struct HierarchyFileReader { 
 private:
@@ -52,10 +97,10 @@ private:
 	}
 
 public:
-	static Hierarchy readHierarchyFromFile(const std::string& _filename) {
+	static std::pair<std::string, Hierarchy> readHierarchyFromFile(const std::string& _hierarchyName, const std::string& _filename) {
 		std::fstream inputFile(_filename);
 		if (inputFile) {
-			Hierarchy result = Hierarchy();
+			Hierarchy	hierarchy		= Hierarchy();
 			std::string line;
 			std::string delimiter = "-";
 			while (std::getline(inputFile, line)) {
@@ -66,7 +111,7 @@ public:
 					
 					std::string stringAfterDelimiter = line.substr(line.find(delimiter) + delimiter.length());
 					std::string subordinateName = removeWhitespacesFromString(stringAfterDelimiter);
-					result.addToHierachy(managerName, subordinateName);
+					hierarchy.addToHierachy(managerName, subordinateName);
 					// TODO: Check if first token already exists before calling addToHierarchy
 					// it is already checking in addToHierarchy
 					// maybe here is the place to print it out tho and stop reading lines further
@@ -76,12 +121,292 @@ public:
 				}
 			}
 			inputFile.close();
-			return result;
+			std::cout << _hierarchyName << " succesfully loaded!" << std::endl;
+			return std::pair<std::string, Hierarchy>(_hierarchyName, hierarchy);
 		}
 		else {
 			inputFile.close();
 			std::cout << _filename << " could not be open."<< std::endl;
+			std::cout << _filename << " possibly not in the same directory or non-existent." << std::endl;
 		}	
+	}
+};
+
+struct MenuItem {
+	string commandName;
+
+	MenuItem(const string& _name) {
+		
+	};
+};
+
+struct ConsoleInputReader {
+
+private:
+
+	static unsigned int countNonWhitespaceStrings(const string& str) {
+		std::stringstream  stream(str);
+		std::string        oneWord;
+		unsigned int       count = 0;
+
+		while (stream >> oneWord) { count++; }
+		return count;
+	}
+	
+	static bool isValidObjectName(const string& _objectNameCandidate) {
+		if (_objectNameCandidate.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_") != std::string::npos) return false;
+
+		return true;
+	}
+
+	static bool isValidFilename(const string& _filename) {
+		size_t fileExtensionDelimiter = _filename.find(".");
+		if (fileExtensionDelimiter == string::npos) return false;
+		string extension = _filename.substr(fileExtensionDelimiter);
+		if (extension.empty()) return false;
+		if (extension != ".txt") return false;
+
+		return true;
+	}
+
+	static bool isValidUserInputLoad(const std::vector<string>& tokenizedInput) {
+		if (tokenizedInput.size() != 2 && tokenizedInput.size() != 3) return false;
+		else {
+			if (!isValidObjectName(tokenizedInput[1])) {
+				std::cout << "Unsupported object name format!\n(Object names may contain characters from A-Z, numbers from 0-9 and '_')\n";
+				return false;
+			}
+			
+			if (tokenizedInput.size() == 3 && !isValidFilename(tokenizedInput[2])) {
+				std::cout << "Invalid filename input!\n(Only .txt files allowed!)\n";
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	static bool isValidUserInputSave(const std::vector<string>& tokenizedInput) {
+		if (tokenizedInput.size() != 2 && tokenizedInput.size() != 3) return false;
+		else {
+			if (!isValidObjectName(tokenizedInput[1])) {
+				std::cout << "Unsupported object name format!\n(Object names may contain characters from A-Z, numbers from 0-9 and '_')\n";
+				return false;
+			}
+
+			if (!isValidFilename(tokenizedInput[2])) {
+				std::cout << "Invalid filename input!\n(Only .txt files allowed!)\n";
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	static bool isValidUserInputFind(const std::string& input) {
+		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
+		if (nonWhiteSpacesStringsInInput != 3) return false;
+
+		return true;
+	}
+
+	static bool isValidUserInputNumSubordinates(const std::string& input) {
+		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
+		if (nonWhiteSpacesStringsInInput != 3) return false;
+
+		return true;
+	}
+
+	static bool isValidUserInputManager(const std::string& input) {
+		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
+		if (nonWhiteSpacesStringsInInput != 3) return false;
+
+		return true;
+	}
+
+	static bool isValidUserInputNumEmployees(const std::string& input) {
+		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
+		if (nonWhiteSpacesStringsInInput != 2) return false;
+
+		return true;
+	}
+
+	static bool isValidUserInputOverloaded(const std::string& input) {
+		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
+		if (nonWhiteSpacesStringsInInput != 2) return false;
+
+		return true;
+	}
+
+	static bool isValidUserInputJoin(const std::string& input) {
+		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
+		if (nonWhiteSpacesStringsInInput != 3) return false;
+
+		return true;
+	}
+
+	static bool isValidUserInputFire(const std::string& input) {
+		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
+		if (nonWhiteSpacesStringsInInput != 3) return false;
+
+		return true;
+	}
+
+	static bool isValidUserInputHire(const std::string& input) {
+		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
+		if (nonWhiteSpacesStringsInInput != 4) return false;
+
+		return true;
+	}
+
+	static bool isValidUserInputSalary(const std::string& input) {
+		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
+		if (nonWhiteSpacesStringsInInput != 3) return false;
+
+		return true;
+	}
+
+	static bool isValidUserInputIncorporate(const std::string& input) {
+		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
+		if (nonWhiteSpacesStringsInInput != 2) return false;
+
+		return true;
+	}
+
+	static bool isValidUserInputModernize(const std::string& input) {
+		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
+		if (nonWhiteSpacesStringsInInput != 2) return false;
+
+		return true;
+	}
+
+	static bool isValidUserInputExit(const std::string& input) {
+
+		return input == "exit";
+	}
+
+	static std::vector<string> tokenizeInput(const std::string& input) {
+		std::vector<string> tokenizedInput;
+
+		std::stringstream inputStringStream(input);
+		std::string token;
+		while (getline(inputStringStream, token, ' ')) {
+			tokenizedInput.push_back(token);
+		}
+
+		return tokenizedInput;
+	}
+
+public:
+
+	static void readInput() {
+		string input;
+		
+		while (std::getline(std::cin, input)) {
+			std::vector<string> tokenizedInput = tokenizeInput(input);
+			if (!tokenizedInput.empty()) {
+				std::string command = tokenizedInput[0];
+
+				if (tokenizedInput[0] == "help") {
+					for (const string& command : commands) std::cout << "- " << command << std::endl;
+				}
+				else if (tokenizedInput[0] == "load" && tokenizedInput.size() == 3) {
+					if (isValidUserInputLoad(tokenizedInput)) {
+						string	objectName = tokenizedInput[1];
+						string	filename = tokenizedInput[2];
+						hierarchies.push_back(HierarchyFileReader::readHierarchyFromFile(objectName, filename));
+					}
+					else {
+						std::cout << "Invalid input for load command! Try again!" << std::endl;
+					}
+				}
+				else if (tokenizedInput[0] == "load" && tokenizedInput.size() == 2) { // TODO:
+					// read until ctrl+z or ctrl+d
+				}
+				else if (tokenizedInput[0] == "save" && tokenizedInput.size() == 3) {
+					if (isValidUserInputLoad(tokenizedInput)) {
+						string	objectName = tokenizedInput[1];
+						string	filename = tokenizedInput[2];
+						if (hierarchiesContainObjectWithName(objectName)) {
+							saveHierarchyWithObjectNameInFilewWithName(objectName, filename);
+
+						}
+						else {
+							std::cout << "No hierarchy with " << objectName << " object name found!" << std::endl;
+						}
+					}
+					else {
+						std::cout << "Invalid input for save command! Try again!" << std::endl;
+					}
+				}
+				else if (tokenizedInput[0] == "save" && tokenizedInput.size() == 2) {
+					if (isValidUserInputLoad(tokenizedInput)) {
+						string	objectName = tokenizedInput[1];
+						if (hierarchiesContainObjectWithName(objectName)) {
+							printHierarchyWithObjectName(objectName);
+						}
+						else {
+							std::cout << "No hierarchy with " << objectName << " object name found!" << std::endl;
+						}
+					}
+					else {
+						std::cout << "Invalid input for save command! Try again!" << std::endl;
+					}
+				}
+				else if (tokenizedInput[0] == "find") { // TODO:
+
+				}
+				else if (tokenizedInput[0] == "num_subordinates") { // TODO:
+
+				}
+				else if (tokenizedInput[0] == "manager") { // TODO:
+
+				}
+				else if (tokenizedInput[0] == "num_employees") { // TODO:
+
+				}
+				else if (tokenizedInput[0] == "overloaded") { // TODO:
+
+				}
+				else if (tokenizedInput[0] == "join") { // TODO:
+
+				}
+				else if (tokenizedInput[0] == "fire") { // TODO:
+
+				}
+				else if (tokenizedInput[0] == "hire") { // TODO:
+
+				}
+				else if (tokenizedInput[0] == "salary") { // TODO:
+
+				} 
+				else if (tokenizedInput[0] == "incorporate") { // TODO:
+
+				}
+				else if (tokenizedInput[0] == "modernize") { // TODO:
+
+				}
+				else if (tokenizedInput[0] == "exit") {
+					exit(1);
+				}
+				else {
+					std::cout << "Such command doesnt exist! (Type help to see the list of commands available)" << std::endl;
+				}
+			}
+		}
+
+
+		// tokenize input
+		// first token - command keyword
+		// call isValidUserInput_COMMAND_ based on the first token
+		// repeat until there's a valid input or exit command was called
+
+		
+		//while (!isValidUserInput(input)) {
+		//	system("CLS");
+		//	std::cout << "Invalid input. Try again!" << std::endl;
+		//	// std::getline(std::cin, input);
+		//}
 	}
 };
 
@@ -169,9 +494,15 @@ int main() {
 	//(joined2.num_subordinates("Uspeshnia") == 4) ? std::cout << "TRUE\n" : std::cout << "FALSE\n";
 	//(joined2.num_overloaded() == 2) ? std::cout << "TRUE\n" : std::cout << "FALSE\n";
 	
-	Hierarchy lozenec = HierarchyFileReader::readHierarchyFromFile("lozenec.txt");
-	lozenec.modernize();
-	std::cout << lozenec.print() << std::endl;
+	//Hierarchy lozenec = HierarchyFileReader::readHierarchyFromFile("lozenec.txt");
+	//lozenec.modernize();
+	//std::cout << lozenec.print() << std::endl;
+
+	std::cout << "Welcome to " << THE_BOSS_NAME << "'s HierarchyManager!" << std::endl;
+	std::cout << "status: waiting for input" << std::endl;
+	std::cout << "*In case you don't know what to do: type 'help'" << std::endl;
+
+	ConsoleInputReader::readInput();
 
 	return 0;
 }

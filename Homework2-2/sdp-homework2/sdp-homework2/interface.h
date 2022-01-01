@@ -9,7 +9,7 @@ using std::list;
 
 const size_t SALARY_PER_DIRECT_SUBORDINATE      = 500;
 const size_t SALARY_PER_INDIRECT_SUBORDINATE    = 50;
-const string THE_BOSS_NAME                          = "Uspeshnia";
+const string THE_BOSS_NAME                      = "Uspeshnia";
 
 class Hierarchy
 {
@@ -129,6 +129,6 @@ private:
     void                    modernizeNode(const Node*, int);
 
 public:
-    void            addToHierachy(const string&, const string&);
+    void                    addToHierachy(const string&, const string&);
     //int         countIndirectSubordinates(const std::string&) const;
 };

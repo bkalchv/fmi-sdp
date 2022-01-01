@@ -7,7 +7,9 @@ using std::queue;
 Hierarchy::Hierarchy(Hierarchy&& rhsHierarchy) noexcept
 {
 	this->root = nullptr;
+	//this->name.clear();
 	std::swap(this->root, rhsHierarchy.root);
+	//std::swap(this->name, rhsHierarchy.name);
 }
 
 Hierarchy::Hierarchy(const Hierarchy& rhsHierarchy)
@@ -16,6 +18,8 @@ Hierarchy::Hierarchy(const Hierarchy& rhsHierarchy)
 		this->root = nullptr;
 	else
 		this->root = this->copyNode(rhsHierarchy.root);
+
+	//this->name = rhsHierarchy.name;
 }
 
 Hierarchy::Hierarchy(const string& data)

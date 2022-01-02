@@ -9,24 +9,31 @@
 
 static std::vector<string> commands =
 {
-	"-  help",
-	"-  load -your_object_name- -your_filename_-(optional)",
-	"-  save -your_object_name- -your_filename_-(optional)",
-	"-  find -your_object_name- -your_employee_name-",
-	"-  num_subordinates -your_object_name- -your_employee_name-",
-	"-  manager -your_object_name- -your_employee_name-",
-	"-  num_employees -your_object_name-",
-	"-  num_overloaded -your_object_name-",
-	"-  join -your_first_object_name- -your_second_object_name-",
-	"-  fire -your_object_name- -your_employee_name-",
-	"-  hire -your_object_name- -your_employee_name- -employee's_manager_name-",
-	"-  salary -your_object_name- -your_employee_name-",
-	"-  incorporate -your_object_name-",
-	"-  modernize -your_object_name-",
-	"-  exit"
+	"help",
+	"load -your_object_name- -your_filename_-(optional)",
+	"save -your_object_name- -your_filename_-(optional)",
+	"find -your_object_name- -your_employee_name-",
+	"num_subordinates -your_object_name- -your_employee_name-",
+	"manager -your_object_name- -your_employee_name-",
+	"num_employees -your_object_name-",
+	"num_overloaded -your_object_name-",
+	"join -your_first_object_name- -your_second_object_name- -your_result_object_name-",
+	"fire -your_object_name- -your_employee_name-",
+	"hire -your_object_name- -your_employee_name- -employee's_manager_name-",
+	"salary -your_object_name- -your_employee_name-",
+	"incorporate -your_object_name-",
+	"modernize -your_object_name-",
+	"exit"
 };
 
-std::vector<std::pair<std::string, Hierarchy>> hierarchies;
+std::vector<std::pair<std::string, Hierarchy>>	hierarchies;
+std::vector<bool>								isHierarchyLoadedAndUnsavedByIndex;
+
+size_t getIndexOfHierarchyByName(const string& _objectName) {
+	for (size_t hierarchyIndex{ 0 }; hierarchyIndex < hierarchies.size(); hierarchyIndex++) {
+		if (hierarchies[hierarchyIndex].first == _objectName) return hierarchyIndex;
+	}
+}
 
 bool hierarchiesContainObjectWithName(const string& _objectName) {
 	for (const std::pair<std::string, Hierarchy>& p : hierarchies) {
@@ -45,13 +52,17 @@ void saveHierarchyWithObjectNameInFilewWithName(const string& _objectName, const
 	std::ofstream fileToWriteTo;
 	fileToWriteTo.open(_filename);
 	for (const std::pair<std::string, Hierarchy>& p : hierarchies) {
-		if (p.first == _objectName) fileToWriteTo << p.second.print();
+		if (p.first == _objectName) { 
+			fileToWriteTo << p.second.print(); 
+			size_t currentObjectWithNameIndex = getIndexOfHierarchyByName(_objectName);
+			isHierarchyLoadedAndUnsavedByIndex[currentObjectWithNameIndex] = true;
+		}
+		
 	}
 	fileToWriteTo.close();
 }
 
 struct HierarchyFileReader { 
-private:
 	static bool containsDelimiterOnce(const std::string& inputLine, const std::string& delimiter) {
 		size_t counterOfDelimiterOccurances = 0;
 		size_t delimiterPosition = inputLine.find(delimiter, 0);
@@ -96,7 +107,6 @@ private:
 		return true;
 	}
 
-public:
 	static std::pair<std::string, Hierarchy> readHierarchyFromFile(const std::string& _hierarchyName, const std::string& _filename) {
 		std::fstream inputFile(_filename);
 		if (inputFile) {
@@ -112,7 +122,7 @@ public:
 					std::string stringAfterDelimiter = line.substr(line.find(delimiter) + delimiter.length());
 					std::string subordinateName = removeWhitespacesFromString(stringAfterDelimiter);
 					hierarchy.addToHierachy(managerName, subordinateName);
-					// TODO: Check if first token already exists before calling addToHierarchy
+					// Check if first token already exists before calling addToHierarchy
 					// it is already checking in addToHierarchy
 					// maybe here is the place to print it out tho and stop reading lines further
 				}
@@ -123,21 +133,10 @@ public:
 			inputFile.close();
 			std::cout << _hierarchyName << " succesfully loaded!" << std::endl;
 			return std::pair<std::string, Hierarchy>(_hierarchyName, hierarchy);
-		}
-		else {
+		} else {
 			inputFile.close();
-			std::cout << _filename << " could not be open."<< std::endl;
-			std::cout << _filename << " possibly not in the same directory or non-existent." << std::endl;
 		}	
 	}
-};
-
-struct MenuItem {
-	string commandName;
-
-	MenuItem(const string& _name) {
-		
-	};
 };
 
 struct ConsoleInputReader {
@@ -169,19 +168,34 @@ private:
 		return true;
 	}
 
-	static bool isValidUserInputLoad(const std::vector<string>& tokenizedInput) {
-		if (tokenizedInput.size() != 2 && tokenizedInput.size() != 3) return false;
+	static bool isFileWithFilenameAccessible(const string& _filename) {
+		std::fstream inputFile(_filename);
+		if (inputFile) {
+			return true;
+			inputFile.close();
+		}
 		else {
-			if (!isValidObjectName(tokenizedInput[1])) {
-				std::cout << "Unsupported object name format!\n(Object names may contain characters from A-Z, numbers from 0-9 and '_')\n";
-				return false;
-			}
-			
-			if (tokenizedInput.size() == 3 && !isValidFilename(tokenizedInput[2])) {
+			return false;
+			inputFile.close();
+		}
+	}
+
+	static bool isValidUserInputLoad(const std::vector<string>& tokenizedInput) {
+		if (tokenizedInput.size() != 2 && tokenizedInput.size() != 3) 
+			return false;
+		else if (!isValidObjectName(tokenizedInput[1])) {
+			std::cout << "Unsupported object name format!\n(Object names may contain characters from A-Z, numbers from 0-9 and '_')\n";
+			return false;
+		} else if (hierarchiesContainObjectWithName(tokenizedInput[1])) {
+			std::cout << tokenizedInput[1] << " already loaded." << std::endl;
+		} else if (tokenizedInput.size() == 3 && !isValidFilename(tokenizedInput[2])) {
 				std::cout << "Invalid filename input!\n(Only .txt files allowed!)\n";
 				return false;
-			}
-		}
+		} else if (tokenizedInput.size() == 3 && !isFileWithFilenameAccessible(tokenizedInput[2])) {
+				std::cout << tokenizedInput[2] << " could not be open." << std::endl;
+				std::cout << tokenizedInput[2] << " possibly not in the same directory or non - existent." << std::endl;
+			return false;
+		} 
 
 		return true;
 	}
@@ -194,7 +208,7 @@ private:
 				return false;
 			}
 
-			if (!isValidFilename(tokenizedInput[2])) {
+			if (tokenizedInput.size() == 3 && !isValidFilename(tokenizedInput[2])) {
 				std::cout << "Invalid filename input!\n(Only .txt files allowed!)\n";
 				return false;
 			}
@@ -203,86 +217,29 @@ private:
 		return true;
 	}
 
-	static bool isValidUserInputFind(const std::string& input) {
-		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
-		if (nonWhiteSpacesStringsInInput != 3) return false;
+	static bool isValidUserInputJoin(const std::vector<string>& tokenizedInput) {
+		if (!isValidObjectName(tokenizedInput[1])) {
+			std::cout << tokenizedInput[1] << " is invalid object name." << std::endl;
+			return false;
+		} 
+		else if (!isValidObjectName(tokenizedInput[2])) {
+			std::cout << tokenizedInput[2] << " is invalid object name." << std::endl;
+			return false;
+		} else if (!isValidObjectName(tokenizedInput[3])) {
+			std::cout << tokenizedInput[3] << " is invalid object name." << std::endl;
+			return false;
+		} else if (hierarchiesContainObjectWithName(tokenizedInput[3])) {
+			std::cout << tokenizedInput[3] << " already loaded." << std::endl;
+			return false;
+		} else if (!hierarchiesContainObjectWithName(tokenizedInput[1])) {
+			std::cout << "No hierarchy with " << tokenizedInput[1] << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
+			return false;
+		} else if (!hierarchiesContainObjectWithName(tokenizedInput[2])) {
+			std::cout << "No hierarchy with " << tokenizedInput[2] << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
+			return false;
+		}
 
 		return true;
-	}
-
-	static bool isValidUserInputNumSubordinates(const std::string& input) {
-		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
-		if (nonWhiteSpacesStringsInInput != 3) return false;
-
-		return true;
-	}
-
-	static bool isValidUserInputManager(const std::string& input) {
-		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
-		if (nonWhiteSpacesStringsInInput != 3) return false;
-
-		return true;
-	}
-
-	static bool isValidUserInputNumEmployees(const std::string& input) {
-		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
-		if (nonWhiteSpacesStringsInInput != 2) return false;
-
-		return true;
-	}
-
-	static bool isValidUserInputOverloaded(const std::string& input) {
-		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
-		if (nonWhiteSpacesStringsInInput != 2) return false;
-
-		return true;
-	}
-
-	static bool isValidUserInputJoin(const std::string& input) {
-		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
-		if (nonWhiteSpacesStringsInInput != 3) return false;
-
-		return true;
-	}
-
-	static bool isValidUserInputFire(const std::string& input) {
-		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
-		if (nonWhiteSpacesStringsInInput != 3) return false;
-
-		return true;
-	}
-
-	static bool isValidUserInputHire(const std::string& input) {
-		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
-		if (nonWhiteSpacesStringsInInput != 4) return false;
-
-		return true;
-	}
-
-	static bool isValidUserInputSalary(const std::string& input) {
-		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
-		if (nonWhiteSpacesStringsInInput != 3) return false;
-
-		return true;
-	}
-
-	static bool isValidUserInputIncorporate(const std::string& input) {
-		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
-		if (nonWhiteSpacesStringsInInput != 2) return false;
-
-		return true;
-	}
-
-	static bool isValidUserInputModernize(const std::string& input) {
-		unsigned int nonWhiteSpacesStringsInInput = countNonWhitespaceStrings(input);
-		if (nonWhiteSpacesStringsInInput != 2) return false;
-
-		return true;
-	}
-
-	static bool isValidUserInputExit(const std::string& input) {
-
-		return input == "exit";
 	}
 
 	static std::vector<string> tokenizeInput(const std::string& input) {
@@ -314,22 +271,71 @@ public:
 					if (isValidUserInputLoad(tokenizedInput)) {
 						string	objectName = tokenizedInput[1];
 						string	filename = tokenizedInput[2];
+
 						hierarchies.push_back(HierarchyFileReader::readHierarchyFromFile(objectName, filename));
+						isHierarchyLoadedAndUnsavedByIndex.push_back(false);
 					}
 					else {
 						std::cout << "Invalid input for load command! Try again!" << std::endl;
 					}
 				}
-				else if (tokenizedInput[0] == "load" && tokenizedInput.size() == 2) { // TODO:
-					// read until ctrl+z or ctrl+d
+				else if (tokenizedInput[0] == "load" && tokenizedInput.size() == 2) {
+					// read until ctrl+z
+					if (!isValidObjectName(tokenizedInput[1])) {
+						std::cout << "Unsupported object name format!\n(Object names may contain characters from A-Z, numbers from 0-9 and '_')\n";
+					}
+					else {
+						std::string hierarchyString;
+						std::string delimiter = "-";
+						std::string line;
+						while (std::getline(std::cin, line))
+						{
+							if (!line.empty()) {
+								// checks if input is good and if it could be added 
+								if (HierarchyFileReader::isValidInputFormat(line)) {
+									std::string stringUntilDelimiter = line.substr(0, line.find(delimiter));
+									std::string managerName = HierarchyFileReader::removeWhitespacesFromString(stringUntilDelimiter);
+
+									std::string stringAfterDelimiter = line.substr(line.find(delimiter) + delimiter.length());
+									std::string subordinateName = HierarchyFileReader::removeWhitespacesFromString(stringAfterDelimiter);
+
+									std::string lineInFile = managerName.append(delimiter).append(subordinateName).append("\n");
+									hierarchyString.append(lineInFile);
+									// Check if first token already exists before calling addToHierarchy
+									// it is already checking in addToHierarchy
+									// maybe here is the place to print it out tho and stop reading lines further
+								}
+								else {
+									std::cout << "Invalid input format!" << std::endl;
+									// throw exception, instead of creating object?
+								}
+							}
+						}
+						try {
+							string objectName			= tokenizedInput[1];
+							Hierarchy hierarchyToAdd = Hierarchy(hierarchyString);
+
+							hierarchies.push_back(std::pair<std::string, Hierarchy>(objectName, hierarchyToAdd));
+							isHierarchyLoadedAndUnsavedByIndex.push_back(true);
+
+							std::cout << objectName << " succesfully loaded!" << std::endl;
+							std::cin.clear();
+
+						} catch (const std::invalid_argument& ia) {
+							std::cerr << ia.what() << std::endl;
+							std::cin.clear();
+						}
+					}
+
+
 				}
 				else if (tokenizedInput[0] == "save" && tokenizedInput.size() == 3) {
-					if (isValidUserInputLoad(tokenizedInput)) {
+					if (isValidUserInputSave(tokenizedInput)) {
 						string	objectName = tokenizedInput[1];
 						string	filename = tokenizedInput[2];
 						if (hierarchiesContainObjectWithName(objectName)) {
 							saveHierarchyWithObjectNameInFilewWithName(objectName, filename);
-
+							std::cout << objectName << " saved." << std::endl;
 						}
 						else {
 							std::cout << "No hierarchy with " << objectName << " object name found!" << std::endl;
@@ -340,7 +346,7 @@ public:
 					}
 				}
 				else if (tokenizedInput[0] == "save" && tokenizedInput.size() == 2) {
-					if (isValidUserInputLoad(tokenizedInput)) {
+					if (isValidUserInputSave(tokenizedInput)) {
 						string	objectName = tokenizedInput[1];
 						if (hierarchiesContainObjectWithName(objectName)) {
 							printHierarchyWithObjectName(objectName);
@@ -398,7 +404,7 @@ public:
 						std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
 					}
 				}
-				else if (tokenizedInput[0] == "manager") {
+				else if (tokenizedInput[0] == "manager" && tokenizedInput.size() == 3) {
 					string objectName = tokenizedInput[1];
 					string employeeName = tokenizedInput[2];
 					if (hierarchiesContainObjectWithName(objectName)) {
@@ -441,7 +447,7 @@ public:
 						std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
 					}
 				}
-				else if (tokenizedInput[0] == "overloaded") {
+				else if (tokenizedInput[0] == "overloaded" && tokenizedInput.size() == 2) {
 					string objectName = tokenizedInput[1];
 					if (hierarchiesContainObjectWithName(objectName)) {
 						for (const std::pair<std::string, Hierarchy>& p : hierarchies) {
@@ -461,8 +467,31 @@ public:
 						std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
 					}
 				}
-				else if (tokenizedInput[0] == "join") { // TODO:
-					
+				else if (tokenizedInput[0] == "join" && tokenizedInput.size() == 4) { 
+					if (isValidUserInputJoin(tokenizedInput)) {
+						string firstObjectName	= tokenizedInput[1];
+						size_t firstObjectIndex = getIndexOfHierarchyByName(firstObjectName);
+						string secondObjectName = tokenizedInput[2];
+						size_t secondObjectIndex = getIndexOfHierarchyByName(secondObjectName);
+						string resultObjectOfJoinName = tokenizedInput[3];
+						
+						Hierarchy firstObjectHierarchy	= hierarchies[firstObjectIndex].second;
+						Hierarchy secondObjectHierarchy = hierarchies[secondObjectIndex].second;
+
+						// TODO: check if it'll be a valid join
+						try {
+							Hierarchy resultObjectHierarchy = firstObjectHierarchy.join(secondObjectHierarchy);
+							hierarchies.push_back(std::pair<string, Hierarchy>(resultObjectOfJoinName, resultObjectHierarchy));
+							isHierarchyLoadedAndUnsavedByIndex.push_back(false);
+						} catch (const std::exception& e) {
+							std::cerr << e.what() << std::endl;
+							continue;
+						}
+
+					}
+					else {
+						std::cout << "Invalid input for Join command! Try again!" << std::endl;
+					}
 				}
 				else if (tokenizedInput[0] == "fire" && tokenizedInput.size() == 3) {
 					string objectName = tokenizedInput[1];
@@ -473,12 +502,15 @@ public:
 								bool wasEmployeeFiredSuccessfully = p.second.fire(employeeName);
 								if (wasEmployeeFiredSuccessfully) {
 									std::cout << employeeName << " was fired from " << objectName << "." << std::endl;
+									size_t objectIndex = getIndexOfHierarchyByName(objectName);
+									isHierarchyLoadedAndUnsavedByIndex[objectIndex] = true;
 								}
 								else {
 									if (employeeName == THE_BOSS_NAME) std::cout << THE_BOSS_NAME << " can't be fired! The whole food chain will fall apart without him in the end." << std::endl;
 									else
 										std::cout << "There's no employee with name " << employeeName << " in " << objectName << "." << std::endl;
 								}
+								break;
 							}
 						}
 					}
@@ -496,11 +528,14 @@ public:
 								bool wasEmployeeHiredSuccessfully = p.second.hire(employeeToHireName, managerName);
 								if (wasEmployeeHiredSuccessfully) {
 									std::cout << employeeToHireName << " was hired in " << objectName << "." << std::endl;
+									size_t objectIndex = getIndexOfHierarchyByName(objectName);
+									isHierarchyLoadedAndUnsavedByIndex[objectIndex] = true;
 								}
 								else {
 										std::cout << "There's no employee with name " << managerName << " in " << objectName << "." << std::endl;
 								}
 							}
+							break;
 						}
 					}
 					else {
@@ -537,6 +572,8 @@ public:
 							if (p.first == objectName) {
 								p.second.incorporate();
 								std::cout << objectName << " incorporated." << std::endl;
+								size_t objectIndex = getIndexOfHierarchyByName(objectName);
+								isHierarchyLoadedAndUnsavedByIndex[objectIndex] = true;
 								break;
 							}
 						}
@@ -552,6 +589,8 @@ public:
 							if (p.first == objectName) {
 								p.second.modernize();
 								std::cout << objectName << " modernized." << std::endl;
+								size_t objectIndex = getIndexOfHierarchyByName(objectName);
+								isHierarchyLoadedAndUnsavedByIndex[objectIndex] = true;
 								break;
 							}
 						}
@@ -561,8 +600,27 @@ public:
 					}
 				}
 				else if (tokenizedInput[0] == "exit") {
-					// TODO:
 					// check if a certain hierarchy has been modified; if so ask where to save the modified hierarchy
+					// done
+
+					for (size_t i{ 0 }; i < isHierarchyLoadedAndUnsavedByIndex.size(); i++) {
+						if (isHierarchyLoadedAndUnsavedByIndex[i]) {
+							const std::pair<string, Hierarchy>& currentUnsavedHierarchy = hierarchies[i];
+							std::cout << currentUnsavedHierarchy.first << " is modified, but not saved." << std::endl;
+							std::cout << "Please enter a filename to save it to:" << std::endl;
+
+
+								string filenameInput;
+								do {
+									std::cin >> filenameInput;
+									std::cin.clear();
+								} while (!isValidFilename(filenameInput));
+
+								saveHierarchyWithObjectNameInFilewWithName(currentUnsavedHierarchy.first, filenameInput);
+								std::cout << currentUnsavedHierarchy.first << " saved." << std::endl;
+						}
+					}
+
 					exit(1);
 				}
 				else {
@@ -576,103 +634,10 @@ public:
 		// first token - command keyword
 		// call isValidUserInput_COMMAND_ based on the first token
 		// repeat until there's a valid input or exit command was called
-
-		
-		//while (!isValidUserInput(input)) {
-		//	system("CLS");
-		//	std::cout << "Invalid input. Try again!" << std::endl;
-		//	// std::getline(std::cin, input);
-		//}
 	}
 };
 
 int main() {
-	//Hierarchy h = HierarchyFileReader::readHierarchyFromFile("HierarchyA.txt");
-	//std::cout << h.manager("Mariya") << std::endl;
-	//std::cout << h.print() << std::endl;
-	//std::cout << "Employees amount in hierarchy: " << h.num_employees() << std::endl;
-	//std::cout << "Employees amount in hierarchy: " << h.num_employees_recursively() << std::endl; -> recursion debugging 
-	//std::cout << "Overloaded amount: " << h.num_overloaded() << std::endl;
-	//std::cout << "Height: " << h.longest_chain() << std::endl;
-	//Hierarchy h1 = h;
-	//std::cout << h1.print() << std::endl;
-
-	//h.fire("Chocho");
-	//std::cout << h.print() << std::endl;
-
-	//h.fire("Bogdan");
-	//std::cout << h.print() << std::endl;
-
-	//h.hire("Chocho", "Uspeshnia");
-	//std::cout << h.print() << std::endl;
-
-	//h.hire("Mariya", "Uspeshnia");
-	//std::cout << h.print() << std::endl;
-	//h.incorporate();
-	//std::cout << "After incorporation: " << std::endl;
-	//std::cout << h.print() << std::endl;
-
-
-	//Hierarchy a = HierarchyFileReader::readHierarchyFromFile("Hierarchy1.txt");
-	//Hierarchy b = HierarchyFileReader::readHierarchyFromFile("Hierarchy2.txt");
-	//Hierarchy c = a.join(b);
-
-	//std::cout << c.print() << std::endl;
-
-	//Hierarchy a1 = HierarchyFileReader::readHierarchyFromFile("HierarchyDiscordExample1.txt");
-	//Hierarchy b1 = HierarchyFileReader::readHierarchyFromFile("HierarchyDiscordExample2.txt");
-	//Hierarchy c1 = a1.join(b1);
-	//Hierarchy c2 = b1.join(a1);
-	//bidirectional join
-	//(c1.print() == c2.print()) ? std::cout << "TRUE\n" : std::cout << "FALSE\n";
-
-	//std::cout << c1.print() << std::endl;
-
-	/*int UspeshniaLevel = a1.getLevelOfNodeByName("Uspeshnia");
-	int a1BLevel = a1.getLevelOfNodeByName("B");
-	int a1CLevel = a1.getLevelOfNodeByName("C");
-	int a1DLevel = a1.getLevelOfNodeByName("D");
-	int a1FLevel = a1.getLevelOfNodeByName("F");
-	int a1QLevel = a1.getLevelOfNodeByName("Q");
-
-	int b1UspeshniaLevel = b1.getLevelOfNodeByName("Uspeshnia");
-	int b1BLevel = b1.getLevelOfNodeByName("B");
-	int b1CLevel = b1.getLevelOfNodeByName("C");
-	int b1DLevel = b1.getLevelOfNodeByName("D");
-	int b1FLevel = b1.getLevelOfNodeByName("F");
-	int b1QLevel = b1.getLevelOfNodeByName("Q");*/
-
-	// join tests
-	//Hierarchy testLozenecNew	= HierarchyFileReader::readHierarchyFromFile("lozenecNew.txt");
-	//Hierarchy testLozenec		= HierarchyFileReader::readHierarchyFromFile("lozenec.txt");
-	//Hierarchy testLarge			= HierarchyFileReader::readHierarchyFromFile("large.txt");
-	//
-	//Hierarchy l2 = testLozenec.join(testLozenec);
-	//(l2.print() == testLozenec.print()) ? std::cout << "TRUE\n" : std::cout << "FALSE\n";
-
-	//(testLarge.print() == testLarge.join(testLarge).print()) ? std::cout << "TRUE\n" : std::cout << "FALSE\n";
-
-	//Hierarchy joined = testLozenecNew.join(testLozenec);
-	//std::cout << joined.print() << std::endl;
-	//std::cout << "Uspeshnia-Gosho\nUspeshnia-Misho\nUspeshnia-MishoPetrov\nUspeshnia-Slavi\nGosho-Dancho\nGosho-Pesho\nMishoPetrov-Slav\nSlavi-Slav1\nSlavi-Slav2\nDancho-Boris\nDancho-Kamen\nPesho-Alex\nSlav1-Mecho\nMecho-Q12Adl\n" << std::endl;
-	//std::cout << (joined.print() == "Uspeshnia-Gosho\nUspeshnia-Misho\nUspeshnia-MishoPetrov\nUspeshnia-Slavi\nGosho-Dancho\nGosho-Pesho\nMishoPetrov-Slav\nSlavi-Slav1\nSlavi-Slav2\nDancho-Boris\nDancho-Kamen\nPesho-Alex\nSlav1-Mecho\nMecho-Q12Adl\n") << std::endl;
-	//(joined.print().compare("Uspeshnia-Gosho\nUspeshnia-Misho\nUspeshnia-MishoPetrov\nUspeshnia-Slavi\nGosho-Dancho\nGosho-Pesho\nMishoPetrov-Slav\nSlavi-Slav1\nSlavi-Slav2\nDancho-Boris\nDancho-Kamen\nPesho-Alex\nSlav1-Mecho\nMecho-Q12Adl\n")) == 0 ? std::cout << "TRUE\n" : std::cout << "FALSE\n";
-	//Hierarchy fromString("Uspeshnia-Gosho\nUspeshnia-Misho\nUspeshnia-MishoPetrov\nUspeshnia-Slavi\nGosho-Dancho\nGosho-Pesho\nMishoPetrov-Slav\nSlavi-Slav1\nSlavi-Slav2\nDancho-Boris\nDancho-Kamen\nPesho-Alex\nSlav1-Mecho\nMecho-Q12Adl\n");
-
-	//std::string joinedStringRepresentation = joined.print();
-	//std::string fromStringStringRepresentation	= fromString.print();
-	//(joinedStringRepresentation.compare(fromStringStringRepresentation) == 0) ? std::cout << "FROM STRING: TRUE\n" : std::cout << "FROM STRING: FALSE\n";
-
-	//(joined.num_employees() == 15) ? std::cout << "TRUE\n" : std::cout << "FALSE\n";
-	//(joined.longest_chain() == 5) ? std::cout << "TRUE\n" : std::cout << "FALSE\n";
-	//Hierarchy joined2 = testLarge.join(testLozenec);
-	//(joined2.num_employees() == 13 + 24) ? std::cout << "TRUE\n" : std::cout << "FALSE\n";
-	//(joined2.num_subordinates("Uspeshnia") == 4) ? std::cout << "TRUE\n" : std::cout << "FALSE\n";
-	//(joined2.num_overloaded() == 2) ? std::cout << "TRUE\n" : std::cout << "FALSE\n";
-	
-	//Hierarchy lozenec = HierarchyFileReader::readHierarchyFromFile("lozenec.txt");
-	//lozenec.modernize();
-	//std::cout << lozenec.print() << std::endl;
 
 	std::cout << "Welcome to " << THE_BOSS_NAME << "'s HierarchyManager!" << std::endl;
 	std::cout << "status: waiting for input" << std::endl;

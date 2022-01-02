@@ -7,9 +7,7 @@ using std::queue;
 Hierarchy::Hierarchy(Hierarchy&& rhsHierarchy) noexcept
 {
 	this->root = nullptr;
-	//this->name.clear();
 	std::swap(this->root, rhsHierarchy.root);
-	//std::swap(this->name, rhsHierarchy.name);
 }
 
 Hierarchy::Hierarchy(const Hierarchy& rhsHierarchy)
@@ -18,8 +16,6 @@ Hierarchy::Hierarchy(const Hierarchy& rhsHierarchy)
 		this->root = nullptr;
 	else
 		this->root = this->copyNode(rhsHierarchy.root);
-
-	//this->name = rhsHierarchy.name;
 }
 
 Hierarchy::Hierarchy(const string& data)
@@ -100,8 +96,6 @@ bool Hierarchy::find(const string& name) const
 	bfsQueue.push(this->root);
 
 	while (!bfsQueue.empty()) {
-		size_t bfsQueueCurrentSize = bfsQueue.size();
-
 		Node* pCurrent = bfsQueue.front();
 		bfsQueue.pop();
 
@@ -349,7 +343,7 @@ void Hierarchy::addToHierachy(const string& _managerName, const string& _subordi
 			//pManagerNode->subordinates.sort(Hierarchy::Node::NodePointerComparator());
 		}
 	} else {
-		throw std::invalid_argument("Invalid input! Manager not found!");
+		throw std::invalid_argument("Invalid input! Manager with name " + _managerName + " not found in Hierarchy!");
 	}
 }
 
@@ -587,85 +581,143 @@ void Hierarchy::modernize()
 	this->modernizeNode(this->root, 0);
 }
 
-Hierarchy Hierarchy::join(const Hierarchy& right) const
-{
-	// TO DO:
-	// CHECK IF NO - GO CONDITION OF MANAGER_OF_NODE -> NODE relationship in lhs tree is swapped in rhs
+bool Hierarchy::isSubordinate(const Node* pNode, const string& nameToCheck) const {
+	if (pNode->subordinates.empty()) return false;
 
-	Hierarchy result = Hierarchy();
-	
 	queue<const Node*> bfsQueue;
-	bfsQueue.push(this->root);
+	bfsQueue.push(pNode);
 
-	size_t pCurrentLevel = 0;
 	while (!bfsQueue.empty()) {
 		const Node* pCurrent = bfsQueue.front();
 		bfsQueue.pop();
 
-		if (pCurrent->name != THE_BOSS_NAME) { // assuming all Hierarchies have "Uspeshnia" for root node
-
-			string pCurrentManager = this->manager(pCurrent->name);
-			bool pCurrentExistsInRight = right.find(pCurrent->name);
-
-			if (pCurrentExistsInRight) {
-				string pCurrentRightTreeOccuranceManager = right.manager(pCurrent->name);
-				int pCurrentRightTreeOccuranceManagerLevel = right.getLevelOfNodeByName(pCurrentRightTreeOccuranceManager);
-
-				int	pCurrentManagerLevel = pCurrentLevel - 1;
-
-				if (pCurrentManager != pCurrentRightTreeOccuranceManager && pCurrentManagerLevel != pCurrentRightTreeOccuranceManagerLevel) {
-					if (pCurrentManagerLevel < pCurrentRightTreeOccuranceManagerLevel) { //pCurrentManager is higher in the Hierarchy
-						result.addToHierachy(pCurrentManager, pCurrent->name);
-					}
-					else if (pCurrentManagerLevel > pCurrentRightTreeOccuranceManagerLevel) { // pCurentRightTreeOccuranceManagerLevel is higher in the Hierarchy
-						result.addToHierachy(pCurrentRightTreeOccuranceManager, pCurrent->name);
-					}
-					else {// pCurrentManager and pCurrentRightTreeOccuranceManagerLevel are equal => choose lexicographically;
-						result.addToHierachy((pCurrentManager < pCurrentRightTreeOccuranceManager) ? pCurrentManager : pCurrentRightTreeOccuranceManager, pCurrent->name);
-					}
-				}
-				else {  // pCurrentManager's name == pCurrentRightTreeOccuranceManager's name AND they're on the same level in both
-					result.addToHierachy(pCurrentManager, pCurrent->name);
-				}
-
-			}
-			else {// pCurrent exists only in lhs Hierarchy
-				result.addToHierachy(pCurrentManager, pCurrent->name);
-			}
-		}
+		if (pCurrent->name == nameToCheck) return true;
 
 		for (const Node* subordinate : pCurrent->subordinates) {
-			if (subordinate == pCurrent->subordinates.front()) pCurrentLevel++;
 			bfsQueue.push(subordinate);
 		}
 	}
 
-	queue<const Node*> BfsQueueRHS;
-	BfsQueueRHS.push(right.root);
+	return false;
+}
 
-	while (!BfsQueueRHS.empty()) {
-		const Node* pCurrentRHS = BfsQueueRHS.front();
-		BfsQueueRHS.pop();
+bool Hierarchy::isAuthorityParadoxPresent(const Hierarchy& pRHSHierarchy) const {
 
-		if (pCurrentRHS->name != THE_BOSS_NAME) { // assuming all Hierarchies have "Uspeshnia" for root node
+	queue<const Node*> bfsQueue;
+	bfsQueue.push(this->root);
 
-			string pCurrentManagerRHS = right.manager(pCurrentRHS->name);
-			bool pCurrentExistsInResult = result.find(pCurrentRHS->name);
+	while (!bfsQueue.empty()) {
+		const Node* pCurrent = bfsQueue.front();
+		bfsQueue.pop();
 
-			if (!pCurrentExistsInResult) {
-				string pCurrentRightTreeOccuranceManager = right.manager(pCurrentRHS->name);
-				result.addToHierachy(pCurrentManagerRHS, pCurrentRHS->name);
-			}
-			else
-			{
-				//std::cout << "pCurrentRHS with name: " << pCurrentRHS->name << " already exists in result." << std::endl;
+		string pCurrentName = pCurrent->name;
+		string pCurrentManagerName = this->manager(pCurrentName);
+		
+		if (pCurrentManagerName != "" && pCurrentManagerName != THE_BOSS_NAME) {
+			if (pRHSHierarchy.find(pCurrentName)) {
+				const Node* pCurrentInRHSHierarchy = pRHSHierarchy.findNodeByName(pCurrentName);
+				if (isSubordinate(pCurrentInRHSHierarchy, pCurrentManagerName)) {
+					return true;
+				}
 			}
 		}
 
-		for (const Node* subordinate : pCurrentRHS->subordinates) {
-			BfsQueueRHS.push(subordinate);
+		for (const Node* subordinate : pCurrent->subordinates) {
+			bfsQueue.push(subordinate);
 		}
 	}
 
-	return result;
+	return false;
+}
+
+Hierarchy Hierarchy::join(const Hierarchy& right) const
+{
+	if (this->root == nullptr) {
+		throw std::exception("Join: LHS root is nullptr. Unable to join!");
+	}
+
+	if (right.root == nullptr) {
+		throw std::exception("Join: RHS root is nullptr. Unable to join!");
+	}
+
+	if (isAuthorityParadoxPresent(right)) {
+		throw std::exception("Join: Authority paradox present. Unable to join!");
+	} else {
+		Hierarchy result = Hierarchy();
+
+		queue<const Node*> bfsQueue;
+		bfsQueue.push(this->root);
+
+		size_t pCurrentLevel = 0;
+		while (!bfsQueue.empty()) {
+			const Node* pCurrent = bfsQueue.front();
+			bfsQueue.pop();
+
+			if (pCurrent->name != THE_BOSS_NAME) { // assuming all Hierarchies have "Uspeshnia" for root node
+
+				string pCurrentManager = this->manager(pCurrent->name);
+				bool pCurrentExistsInRight = right.find(pCurrent->name);
+
+				if (pCurrentExistsInRight) {
+					string pCurrentRightTreeOccuranceManager = right.manager(pCurrent->name);
+					int pCurrentRightTreeOccuranceManagerLevel = right.getLevelOfNodeByName(pCurrentRightTreeOccuranceManager);
+
+					int	pCurrentManagerLevel = pCurrentLevel - 1;
+
+					if (pCurrentManager != pCurrentRightTreeOccuranceManager && pCurrentManagerLevel != pCurrentRightTreeOccuranceManagerLevel) {
+						if (pCurrentManagerLevel < pCurrentRightTreeOccuranceManagerLevel) { //pCurrentManager is higher in the Hierarchy
+							result.addToHierachy(pCurrentManager, pCurrent->name);
+						}
+						else if (pCurrentManagerLevel > pCurrentRightTreeOccuranceManagerLevel) { // pCurentRightTreeOccuranceManagerLevel is higher in the Hierarchy
+							result.addToHierachy(pCurrentRightTreeOccuranceManager, pCurrent->name);
+						}
+						else {// pCurrentManager and pCurrentRightTreeOccuranceManagerLevel are equal => choose lexicographically;
+							result.addToHierachy((pCurrentManager < pCurrentRightTreeOccuranceManager) ? pCurrentManager : pCurrentRightTreeOccuranceManager, pCurrent->name);
+						}
+					}
+					else {  // pCurrentManager's name == pCurrentRightTreeOccuranceManager's name AND they're on the same level in both
+						result.addToHierachy(pCurrentManager, pCurrent->name);
+					}
+
+				}
+				else {// pCurrent exists only in lhs Hierarchy
+					result.addToHierachy(pCurrentManager, pCurrent->name);
+				}
+			}
+
+			for (const Node* subordinate : pCurrent->subordinates) {
+				if (subordinate == pCurrent->subordinates.front()) pCurrentLevel++;
+				bfsQueue.push(subordinate);
+			}
+		}
+
+		queue<const Node*> BfsQueueRHS;
+		BfsQueueRHS.push(right.root);
+
+		while (!BfsQueueRHS.empty()) {
+			const Node* pCurrentRHS = BfsQueueRHS.front();
+			BfsQueueRHS.pop();
+
+			if (pCurrentRHS->name != THE_BOSS_NAME) { // assuming all Hierarchies have "Uspeshnia" for root node
+
+				string pCurrentManagerRHS = right.manager(pCurrentRHS->name);
+				bool pCurrentExistsInResult = result.find(pCurrentRHS->name);
+
+				if (!pCurrentExistsInResult) {
+					string pCurrentRightTreeOccuranceManager = right.manager(pCurrentRHS->name);
+					result.addToHierachy(pCurrentManagerRHS, pCurrentRHS->name);
+				}
+				else
+				{
+					//std::cout << "pCurrentRHS with name: " << pCurrentRHS->name << " already exists in result." << std::endl;
+				}
+			}
+
+			for (const Node* subordinate : pCurrentRHS->subordinates) {
+				BfsQueueRHS.push(subordinate);
+			}
+		}
+
+		return result;
+	}
 }

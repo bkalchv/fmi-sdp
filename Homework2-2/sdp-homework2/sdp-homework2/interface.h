@@ -127,6 +127,8 @@ private:
     void                    sortNodeSubordinatesRecursively(Node*) const;
     int                     getLevelOfNodeByName(const string&) const;
     void                    modernizeNode(const Node*, int);
+    bool                    isSubordinate(const Node*, const string&) const;
+    bool                    isAuthorityParadoxPresent(const Hierarchy&) const;
 
 public:
     void                    addToHierachy(const string&, const string&);

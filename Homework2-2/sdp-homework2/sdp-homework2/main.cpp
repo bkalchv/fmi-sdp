@@ -353,7 +353,7 @@ public:
 						std::cout << "Invalid input for save command! Try again!" << std::endl;
 					}
 				}
-				else if (tokenizedInput[0] == "find" && tokenizedInput.size() == 3) { // TODO:
+				else if (tokenizedInput[0] == "find" && tokenizedInput.size() == 3) {
 					string objectName	= tokenizedInput[1];
 					string employeeName = tokenizedInput[2];
 					if (hierarchiesContainObjectWithName(objectName)) {
@@ -375,7 +375,7 @@ public:
 						std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
 					}
 				}
-				else if (tokenizedInput[0] == "num_subordinates" && tokenizedInput.size() == 3) { // TODO:
+				else if (tokenizedInput[0] == "num_subordinates" && tokenizedInput.size() == 3) {
 					string objectName = tokenizedInput[1];
 					string employeeName = tokenizedInput[2];
 					if (hierarchiesContainObjectWithName(objectName)) {
@@ -398,7 +398,7 @@ public:
 						std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
 					}
 				}
-				else if (tokenizedInput[0] == "manager") { // TODO:
+				else if (tokenizedInput[0] == "manager") {
 					string objectName = tokenizedInput[1];
 					string employeeName = tokenizedInput[2];
 					if (hierarchiesContainObjectWithName(objectName)) {
@@ -426,7 +426,7 @@ public:
 						std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
 					}
 				}
-				else if (tokenizedInput[0] == "num_employees" && tokenizedInput.size() == 2) { // TODO:
+				else if (tokenizedInput[0] == "num_employees" && tokenizedInput.size() == 2) {
 					string objectName = tokenizedInput[1];
 					if (hierarchiesContainObjectWithName(objectName)) {
 						for (const std::pair<std::string, Hierarchy>& p : hierarchies) {
@@ -441,7 +441,7 @@ public:
 						std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
 					}
 				}
-				else if (tokenizedInput[0] == "overloaded") { // TODO:
+				else if (tokenizedInput[0] == "overloaded") {
 					string objectName = tokenizedInput[1];
 					if (hierarchiesContainObjectWithName(objectName)) {
 						for (const std::pair<std::string, Hierarchy>& p : hierarchies) {
@@ -464,7 +464,7 @@ public:
 				else if (tokenizedInput[0] == "join") { // TODO:
 					
 				}
-				else if (tokenizedInput[0] == "fire" && tokenizedInput.size() == 3) { // TODO:
+				else if (tokenizedInput[0] == "fire" && tokenizedInput.size() == 3) {
 					string objectName = tokenizedInput[1];
 					string employeeName = tokenizedInput[2];
 					if (hierarchiesContainObjectWithName(objectName)) {
@@ -486,7 +486,7 @@ public:
 						std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
 					}
 				}
-				else if (tokenizedInput[0] == "hire" && tokenizedInput.size() == 4) { // TODO:
+				else if (tokenizedInput[0] == "hire" && tokenizedInput.size() == 4) {
 					string objectName = tokenizedInput[1];
 					string employeeToHireName = tokenizedInput[2];
 					string managerName = tokenizedInput[3];
@@ -507,7 +507,7 @@ public:
 						std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
 					}
 				}
-				else if (tokenizedInput[0] == "salary" && tokenizedInput.size() == 3) { // TODO:
+				else if (tokenizedInput[0] == "salary" && tokenizedInput.size() == 3) {
 					string objectName = tokenizedInput[1];
 					string employeeName = tokenizedInput[2];
 					if (hierarchiesContainObjectWithName(objectName)) {
@@ -561,7 +561,8 @@ public:
 					}
 				}
 				else if (tokenizedInput[0] == "exit") {
-				// check if a certain hierarchy has been modified; if so ask where to save the modified hierarchy
+					// TODO:
+					// check if a certain hierarchy has been modified; if so ask where to save the modified hierarchy
 					exit(1);
 				}
 				else {

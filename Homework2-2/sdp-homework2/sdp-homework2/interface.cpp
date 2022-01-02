@@ -451,7 +451,6 @@ bool Hierarchy::fire(const string& who)
 
 bool Hierarchy::hire(const string& who, const string& boss)
 {
-	
 	if (!this->find(boss)) {
 		// Stays for debugging purposes
 		//std::cout << "hire: Boss with name " << boss << " not found" << std::endl;
@@ -590,8 +589,11 @@ void Hierarchy::modernize()
 
 Hierarchy Hierarchy::join(const Hierarchy& right) const
 {
-	Hierarchy result = Hierarchy();
+	// TO DO:
+	// CHECK IF NO - GO CONDITION OF MANAGER_OF_NODE -> NODE relationship in lhs tree is swapped in rhs
 
+	Hierarchy result = Hierarchy();
+	
 	queue<const Node*> bfsQueue;
 	bfsQueue.push(this->root);
 
@@ -600,7 +602,7 @@ Hierarchy Hierarchy::join(const Hierarchy& right) const
 		const Node* pCurrent = bfsQueue.front();
 		bfsQueue.pop();
 
-		if (pCurrent->name != THE_BOSS_NAME) { // assuming all Hierarchys have "Uspeshnia" for root node
+		if (pCurrent->name != THE_BOSS_NAME) { // assuming all Hierarchies have "Uspeshnia" for root node
 
 			string pCurrentManager = this->manager(pCurrent->name);
 			bool pCurrentExistsInRight = right.find(pCurrent->name);
@@ -645,7 +647,7 @@ Hierarchy Hierarchy::join(const Hierarchy& right) const
 		const Node* pCurrentRHS = BfsQueueRHS.front();
 		BfsQueueRHS.pop();
 
-		if (pCurrentRHS->name != THE_BOSS_NAME) { // assuming all Hierarchys have "Uspeshnia" for root node
+		if (pCurrentRHS->name != THE_BOSS_NAME) { // assuming all Hierarchies have "Uspeshnia" for root node
 
 			string pCurrentManagerRHS = right.manager(pCurrentRHS->name);
 			bool pCurrentExistsInResult = result.find(pCurrentRHS->name);

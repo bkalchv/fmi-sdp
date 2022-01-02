@@ -9,21 +9,21 @@
 
 static std::vector<string> commands =
 {
-	"help",
-	"load -your_object_name- -your_filename_-(optional)",
-	"save -your_object_name- -your_filename_-(optional)",
-	"find",
-	"num_subordinates",
-	"manager",
-	"num_employees",
-	"overloaded",
-	"join",
-	"fire",
-	"hire",
-	"salary",
-	"incorporate",
-	"modernize",
-	"exit"
+	"-  help",
+	"-  load -your_object_name- -your_filename_-(optional)",
+	"-  save -your_object_name- -your_filename_-(optional)",
+	"-  find -your_object_name- -your_employee_name-",
+	"-  num_subordinates -your_object_name- -your_employee_name-",
+	"-  manager -your_object_name- -your_employee_name-",
+	"-  num_employees -your_object_name-",
+	"-  num_overloaded -your_object_name-",
+	"-  join -your_first_object_name- -your_second_object_name-",
+	"-  fire -your_object_name- -your_employee_name-",
+	"-  hire -your_object_name- -your_employee_name- -employee's_manager_name-",
+	"-  salary -your_object_name- -your_employee_name-",
+	"-  incorporate -your_object_name-",
+	"-  modernize -your_object_name-",
+	"-  exit"
 };
 
 std::vector<std::pair<std::string, Hierarchy>> hierarchies;
@@ -346,51 +346,226 @@ public:
 							printHierarchyWithObjectName(objectName);
 						}
 						else {
-							std::cout << "No hierarchy with " << objectName << " object name found!" << std::endl;
+							std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
 						}
 					}
 					else {
 						std::cout << "Invalid input for save command! Try again!" << std::endl;
 					}
 				}
-				else if (tokenizedInput[0] == "find") { // TODO:
-
+				else if (tokenizedInput[0] == "find" && tokenizedInput.size() == 3) { // TODO:
+					string objectName	= tokenizedInput[1];
+					string employeeName = tokenizedInput[2];
+					if (hierarchiesContainObjectWithName(objectName)) {
+						for (const std::pair<std::string, Hierarchy>& p : hierarchies) {
+							if (p.first == objectName) {
+								bool employeeFound = p.second.find(employeeName);
+								if (employeeFound) {
+									std::cout << employeeName << " is employed in " << objectName << "." << std::endl;
+								}
+								else
+								{
+									std::cout << "There's no employee with name " << employeeName << " in " << objectName << "." << std::endl;
+								}
+								break;
+							}
+						}
+					}
+					else {
+						std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
+					}
 				}
-				else if (tokenizedInput[0] == "num_subordinates") { // TODO:
-
+				else if (tokenizedInput[0] == "num_subordinates" && tokenizedInput.size() == 3) { // TODO:
+					string objectName = tokenizedInput[1];
+					string employeeName = tokenizedInput[2];
+					if (hierarchiesContainObjectWithName(objectName)) {
+						for (const std::pair<std::string, Hierarchy>& p : hierarchies) {
+							if (p.first == objectName) {
+								bool employeeFound = p.second.find(employeeName);
+								if (employeeFound) {
+									int employeeSubordinates = p.second.num_subordinates(employeeName);
+									std::cout << employeeName << " in " << objectName << " has " << employeeSubordinates << " subordinates." << std::endl;
+								}
+								else
+								{
+									std::cout << "There's no employee with name " << employeeName << " in " << objectName << "." << std::endl;
+								}
+								break;
+							}
+						}
+					}
+					else {
+						std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
+					}
 				}
 				else if (tokenizedInput[0] == "manager") { // TODO:
-
+					string objectName = tokenizedInput[1];
+					string employeeName = tokenizedInput[2];
+					if (hierarchiesContainObjectWithName(objectName)) {
+						for (const std::pair<std::string, Hierarchy>& p : hierarchies) {
+							if (p.first == objectName) {
+								bool employeeFound = p.second.find(employeeName);
+								if (employeeFound) {
+									string employeeManagerName = p.second.manager(employeeName);
+									if (employeeName == THE_BOSS_NAME) {
+										std::cout << employeeName << " is on top of the food chain. Nobody can be his/her/their manager." << std::endl;
+									}
+									else {
+										std::cout << "The manager of " << employeeName << " in " << objectName << " is " << employeeManagerName << "." << std::endl;
+									}
+								}
+								else
+								{
+									std::cout << "There's no employee with name " << employeeName << " in " << objectName << "." << std::endl;
+								}
+								break;
+							}
+						}
+					}
+					else {
+						std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
+					}
 				}
-				else if (tokenizedInput[0] == "num_employees") { // TODO:
-
+				else if (tokenizedInput[0] == "num_employees" && tokenizedInput.size() == 2) { // TODO:
+					string objectName = tokenizedInput[1];
+					if (hierarchiesContainObjectWithName(objectName)) {
+						for (const std::pair<std::string, Hierarchy>& p : hierarchies) {
+							if (p.first == objectName) {
+								int employeesAmount = p.second.num_employees();
+								std::cout << "There are " << employeesAmount << " employees in " << objectName << "." << std::endl;
+								break;
+							}
+						}
+					}
+					else {
+						std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
+					}
 				}
 				else if (tokenizedInput[0] == "overloaded") { // TODO:
-
+					string objectName = tokenizedInput[1];
+					if (hierarchiesContainObjectWithName(objectName)) {
+						for (const std::pair<std::string, Hierarchy>& p : hierarchies) {
+							if (p.first == objectName) {
+								int overloadedEmployeesAmount = p.second.num_overloaded();
+								if (overloadedEmployeesAmount == 0) {
+									std::cout << "There are no overloaded employees in " << objectName << "." << std::endl;
+								}
+								else {
+									std::cout << "There are " << overloadedEmployeesAmount << " overloaded employees in " << objectName << "." << std::endl;
+								}
+								break;
+							}
+						}
+					}
+					else {
+						std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
+					}
 				}
 				else if (tokenizedInput[0] == "join") { // TODO:
-
+					
 				}
-				else if (tokenizedInput[0] == "fire") { // TODO:
-
+				else if (tokenizedInput[0] == "fire" && tokenizedInput.size() == 3) { // TODO:
+					string objectName = tokenizedInput[1];
+					string employeeName = tokenizedInput[2];
+					if (hierarchiesContainObjectWithName(objectName)) {
+						for (std::pair<std::string, Hierarchy>& p : hierarchies) {
+							if (p.first == objectName) {
+								bool wasEmployeeFiredSuccessfully = p.second.fire(employeeName);
+								if (wasEmployeeFiredSuccessfully) {
+									std::cout << employeeName << " was fired from " << objectName << "." << std::endl;
+								}
+								else {
+									if (employeeName == THE_BOSS_NAME) std::cout << THE_BOSS_NAME << " can't be fired! The whole food chain will fall apart without him in the end." << std::endl;
+									else
+										std::cout << "There's no employee with name " << employeeName << " in " << objectName << "." << std::endl;
+								}
+							}
+						}
+					}
+					else {
+						std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
+					}
 				}
-				else if (tokenizedInput[0] == "hire") { // TODO:
-
+				else if (tokenizedInput[0] == "hire" && tokenizedInput.size() == 4) { // TODO:
+					string objectName = tokenizedInput[1];
+					string employeeToHireName = tokenizedInput[2];
+					string managerName = tokenizedInput[3];
+					if (hierarchiesContainObjectWithName(objectName)) {
+						for (std::pair<std::string, Hierarchy>& p : hierarchies) {
+							if (p.first == objectName) {
+								bool wasEmployeeHiredSuccessfully = p.second.hire(employeeToHireName, managerName);
+								if (wasEmployeeHiredSuccessfully) {
+									std::cout << employeeToHireName << " was hired in " << objectName << "." << std::endl;
+								}
+								else {
+										std::cout << "There's no employee with name " << managerName << " in " << objectName << "." << std::endl;
+								}
+							}
+						}
+					}
+					else {
+						std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
+					}
 				}
-				else if (tokenizedInput[0] == "salary") { // TODO:
-
+				else if (tokenizedInput[0] == "salary" && tokenizedInput.size() == 3) { // TODO:
+					string objectName = tokenizedInput[1];
+					string employeeName = tokenizedInput[2];
+					if (hierarchiesContainObjectWithName(objectName)) {
+						for (const std::pair<std::string, Hierarchy>& p : hierarchies) {
+							if (p.first == objectName) {
+								bool employeeFound = p.second.find(employeeName);
+								if (employeeFound) {
+									unsigned int employeeSalary = p.second.getSalary(employeeName);
+									std::cout << "The salary of " << employeeName << " in " << objectName << " is " << employeeSalary << " BGN." << std::endl;
+								}
+								else
+								{
+									std::cout << "There's no employee with name " << employeeName << " in " << objectName << "." << std::endl;
+								}
+								break;
+							}
+						}
+					}
+					else {
+						std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
+					}
 				} 
-				else if (tokenizedInput[0] == "incorporate") { // TODO:
-
+				else if (tokenizedInput[0] == "incorporate" && tokenizedInput.size() == 2) { 
+					string objectName = tokenizedInput[1];
+					if (hierarchiesContainObjectWithName(objectName)) {
+						for (std::pair<std::string, Hierarchy>& p : hierarchies) {
+							if (p.first == objectName) {
+								p.second.incorporate();
+								std::cout << objectName << " incorporated." << std::endl;
+								break;
+							}
+						}
+					}
+					else {
+						std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
+					}
 				}
-				else if (tokenizedInput[0] == "modernize") { // TODO:
-
+				else if (tokenizedInput[0] == "modernize" && tokenizedInput.size() == 2) {
+					string objectName = tokenizedInput[1];
+					if (hierarchiesContainObjectWithName(objectName)) {
+						for (std::pair<std::string, Hierarchy>& p : hierarchies) {
+							if (p.first == objectName) {
+								p.second.modernize();
+								std::cout << objectName << " modernized." << std::endl;
+								break;
+							}
+						}
+					}
+					else {
+						std::cout << "No hierarchy with " << objectName << " object name found! Maybe this hierarchy hasn't been loaded yet." << std::endl;
+					}
 				}
 				else if (tokenizedInput[0] == "exit") {
+				// check if a certain hierarchy has been modified; if so ask where to save the modified hierarchy
 					exit(1);
 				}
 				else {
-					std::cout << "Such command doesnt exist! (Type help to see the list of commands available)" << std::endl;
+					std::cout << "Wrong command or command format! (Type help to see the list of commands available)" << std::endl;
 				}
 			}
 		}

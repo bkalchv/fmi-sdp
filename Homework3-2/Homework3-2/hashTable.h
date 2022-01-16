@@ -16,7 +16,6 @@ public:
 		Element(const std::string& word, size_t wordCount = 0) : keyWord(word), wordCount(wordCount) {}
 	};
 
-
 public:
 	MyHashTable();
 	MyHashTable(size_t);
@@ -27,13 +26,12 @@ public:
 
 	bool insert(const std::string&, size_t);
 	bool insert(const Element&);
-	//bool erase(const std::string&);
 	void clear();
 
-	
 	size_t& at(const std::string&);
 	const size_t at(const std::string&) const;
 
+	//Returns the amount of elements in the HashTable
 	size_t	getSize() const;
 	size_t	capacity() const;
 	float	calculateLoadFactor() const;
@@ -43,6 +41,9 @@ public:
 	MyHashTable substract(const MyHashTable&) const;
 
 	struct HashTableReader;
+
+	//Returns the amount of words in the HashTable
+	size_t countOfWords() const;
 
 private:
 	using row = std::forward_list<Element>;

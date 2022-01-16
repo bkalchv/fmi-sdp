@@ -46,10 +46,17 @@ public:
 	WordsMultiset(const std::string& filename);
 	WordsMultiset(std::istream&);
 	void print();
-	WordsMultiset substract(const WordsMultiset&);
+	WordsMultiset substract(const WordsMultiset&) const;
+	
+	size_t getHashTableCapacity() const;
+	using hashTableRow = std::forward_list<MyHashTable::Element>;
+	hashTableRow getHashTableRowAt(size_t) const;
 
 private:
 	MyHashTable hashTable;
+
+public:
+	size_t wordsAmount = 0;
 };
 
 
@@ -57,7 +64,6 @@ private:
  //DO NOT modify this class
  //If you need to see how it is intended to be used,
  //check out the corresponding unit tests
-
 class ComparisonReport {
 public:
 	/// A multiset of all words that exist in both streams
@@ -67,6 +73,8 @@ public:
 	/// The first element of the array contains the words that are unique
 	/// to the first stream (a) and the second one -- to the second stream (b)
 	WordsMultiset uniqueWords[2];
+
+	void printReport();
 };
 
 /// 

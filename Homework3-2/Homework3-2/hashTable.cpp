@@ -212,7 +212,7 @@ void MyHashTable::print()
 
 MyHashTable MyHashTable::substract(const MyHashTable& substractorObject) const
 {
-	if (substractorObject.size == 0) return MyHashTable(*this);
+	if (substractorObject.getSize() == 0) return *this;
 
 	MyHashTable result = MyHashTable();
 	for (const row& fwdList : this->hashTableVector)
@@ -233,4 +233,20 @@ MyHashTable MyHashTable::substract(const MyHashTable& substractorObject) const
 	}
 
 	return result;
+}
+
+size_t MyHashTable::countOfWords() const
+{
+	size_t wordsInHashTable = 0;
+
+	for (const row& fwdList : this->hashTableVector)
+	{
+		for (const MyHashTable::Element& element : fwdList)
+		{
+			size_t		currentWordCount = element.wordCount;
+			wordsInHashTable += currentWordCount;
+		}
+	}
+
+	return wordsInHashTable;
 }

@@ -54,6 +54,24 @@ void MyHashTable::clear()
 	this->size = 0;
 }
 
+size_t& MyHashTable::at(const std::string& keyWord)
+{
+	size_t hashIndex = this->calculateHashIndex(keyWord);
+	for (MyHashTable::Element& element : this->hashTableVector[hashIndex]) 
+	{
+		if (element.keyWord == keyWord) return element.wordCount;
+	}
+}
+
+const size_t MyHashTable::at(const std::string& keyWord) const
+{
+	size_t hashIndex = this->calculateHashIndex(keyWord);
+	for (const MyHashTable::Element& element : this->hashTableVector[hashIndex])
+	{
+		if (element.keyWord == keyWord) return element.wordCount;
+	}
+}
+
 size_t MyHashTable::calculateHashIndex(const std::string& keyWord)
 {
 	return std::hash<std::string>{}(keyWord) % this->capacity();
@@ -110,6 +128,12 @@ MyHashTable::Element* MyHashTable::addElement(const MyHashTable::Element& elemen
 	return &this->hashTableVector[indexToAddTo].front();
 }
 
+using row = std::forward_list<MyHashTable::Element>;
+const row& MyHashTable::getConstRefRowAt(size_t atIndex) const
+{
+	return this->hashTableVector[atIndex];
+}
+
 size_t MyHashTable::getSize() const
 {
 	return this->size;
@@ -127,7 +151,7 @@ float MyHashTable::calculateLoadFactor() const
 
 void MyHashTable::rehash(size_t newDesiredCapacity)
 {
-	size_t smallestCapacityForCurrentHashTableRequired = std::ceil(this->size / this->maxLoadFactor);
+	size_t smallestCapacityForCurrentHashTableRequired = (size_t) std::ceil(this->size / this->maxLoadFactor);
 
 	size_t newHashTableVectorSize = std::max(std::max(newDesiredCapacity, smallestCapacityForCurrentHashTableRequired), DEFAULT_INITIAL_SIZE);
 
@@ -184,4 +208,29 @@ void MyHashTable::print()
 	}
 	std::cout << std::endl;
 
+}
+
+MyHashTable MyHashTable::substract(const MyHashTable& substractorObject) const
+{
+	if (substractorObject.size == 0) return MyHashTable(*this);
+
+	MyHashTable result = MyHashTable();
+	for (const row& fwdList : this->hashTableVector)
+	{
+		for (const MyHashTable::Element& element : fwdList)
+		{
+			std::string currentWord			= element.keyWord;
+			size_t		currentWordCount	= element.wordCount;
+			if (substractorObject.contains(currentWord)) 
+			{
+				size_t currentWordCountInSubtractor = substractorObject.at(currentWord);
+				if (currentWordCount > currentWordCountInSubtractor) 
+					result.insert(currentWord, currentWordCount - currentWordCountInSubtractor);
+			}
+			else
+				result.addElement(currentWord, currentWordCount);
+		}
+	}
+
+	return result;
 }

@@ -1,7 +1,10 @@
-//#ifndef INTERFACE_HEADER
-//#define INTERFACE_HEADER
+#ifndef INTERFACE_HEADER
+#define INTERFACE_HEADER
+
+#include "hashTable.h"
 
 #include <iostream>
+#include <istream>
 #include <set>
 #include <string>
 
@@ -18,7 +21,6 @@ class WordsMultiset {
 	// MY NOTES:
 	// Idea: hash table of elements
 	// element has fields: std::string word, size_t count
-
 
 public:
 	/// Adds times occurences of word to the container
@@ -40,16 +42,22 @@ public:
 	std::multiset<std::string> words() const;
 
 	// You can add additional members if you need to
+	WordsMultiset();
+	WordsMultiset(const std::string& filename);
+	WordsMultiset(std::istream&);
+	void print();
+	WordsMultiset substract(const WordsMultiset&);
+
 private:
-	static bool isWhitespace(char);
+	MyHashTable hashTable;
 };
 
-///
-/// Results of the comparison of two streams of words
-/// DO NOT modify this class
-/// If you need to see how it is intended to be used,
-/// check out the corresponding unit tests
-///
+
+ //Results of the comparison of two streams of words
+ //DO NOT modify this class
+ //If you need to see how it is intended to be used,
+ //check out the corresponding unit tests
+
 class ComparisonReport {
 public:
 	/// A multiset of all words that exist in both streams
@@ -69,6 +77,7 @@ public:
 	ComparisonReport compare(std::istream& a, std::istream& b);
 
 	// You can add additional members if you need to
+	static bool keyExistsInBoth(const std::string&, const WordsMultiset&, const WordsMultiset&);
 };
 
-//#endif // !INTERFACE_HEADER
+#endif // !INTERFACE_HEADER

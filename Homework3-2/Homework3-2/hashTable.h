@@ -8,7 +8,7 @@
 
 class MyHashTable {
 	
-private:
+public:
 	struct Element {
 		std::string keyWord;
 		size_t		wordCount;
@@ -40,6 +40,9 @@ public:
 	void	rehash(size_t);
 	void	reserve(size_t);
 	void	print();
+	MyHashTable substract(const MyHashTable&) const;
+
+	struct HashTableReader;
 
 private:
 	using row = std::forward_list<Element>;
@@ -55,6 +58,9 @@ private:
 	bool wouldAdditionRequireRehashing() const;
 	Element* addElement(const std::string&, size_t);
 	Element* addElement(const Element&);
+
+public:
+	const row& getConstRefRowAt(size_t) const;
 };
 
 #endif
